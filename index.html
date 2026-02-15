@@ -17,6 +17,21 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Lovable" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <script>
+      // Apply accessibility classes before React mounts to prevent FOUC
+      (function() {
+        var d = document.documentElement;
+        var themeMap = { dark: 'theme-dark', light: 'theme-light', 'high-contrast-dark': 'theme-hc-dark', 'high-contrast-light': 'theme-hc-light' };
+        var theme = localStorage.getItem('a11y-theme') || 'dark';
+        d.classList.add(themeMap[theme] || 'theme-dark');
+        var cv = localStorage.getItem('a11y-color-vision') || 'standard';
+        d.classList.add('cv-' + cv);
+        var ts = localStorage.getItem('a11y-text-size') || 'normal';
+        d.classList.add('text-size-' + ts);
+        if (localStorage.getItem('a11y-reduce-motion') === 'true') d.classList.add('reduce-motion');
+        if (localStorage.getItem('a11y-enhanced-focus') !== 'false') d.classList.add('enhanced-focus');
+      })();
+    </script>
   </head>
 
   <body>

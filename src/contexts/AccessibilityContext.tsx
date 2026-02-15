@@ -33,37 +33,34 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [reduceMotion, setReduceMotion] = useState(() => localStorage.getItem("a11y-reduce-motion") === "true");
   const [enhancedFocus, setEnhancedFocus] = useState(() => localStorage.getItem("a11y-enhanced-focus") !== "false");
 
+  // Apply all classes in a single effect to avoid race conditions
   useEffect(() => {
+    const root = document.documentElement;
+    
+    // Theme
     localStorage.setItem("a11y-theme", theme);
-    const root = document.documentElement;
     root.classList.remove("theme-dark", "theme-light", "theme-hc-dark", "theme-hc-light");
-    const cls = { dark: "theme-dark", light: "theme-light", "high-contrast-dark": "theme-hc-dark", "high-contrast-light": "theme-hc-light" };
+    const cls: Record<Theme, string> = { dark: "theme-dark", light: "theme-light", "high-contrast-dark": "theme-hc-dark", "high-contrast-light": "theme-hc-light" };
     root.classList.add(cls[theme]);
-  }, [theme]);
 
-  useEffect(() => {
+    // Text size
     localStorage.setItem("a11y-text-size", textSize);
-    const root = document.documentElement;
     Object.values(textSizeMap).forEach((c) => root.classList.remove(c));
     root.classList.add(textSizeMap[textSize]);
-  }, [textSize]);
 
-  useEffect(() => {
+    // Color vision
     localStorage.setItem("a11y-color-vision", colorVision);
-    const root = document.documentElement;
     root.classList.remove("cv-standard", "cv-protanopia", "cv-deuteranopia", "cv-tritanopia");
     root.classList.add(`cv-${colorVision}`);
-  }, [colorVision]);
 
-  useEffect(() => {
+    // Reduce motion
     localStorage.setItem("a11y-reduce-motion", String(reduceMotion));
-    document.documentElement.classList.toggle("reduce-motion", reduceMotion);
-  }, [reduceMotion]);
+    root.classList.toggle("reduce-motion", reduceMotion);
 
-  useEffect(() => {
+    // Enhanced focus
     localStorage.setItem("a11y-enhanced-focus", String(enhancedFocus));
-    document.documentElement.classList.toggle("enhanced-focus", enhancedFocus);
-  }, [enhancedFocus]);
+    root.classList.toggle("enhanced-focus", enhancedFocus);
+  }, [theme, textSize, colorVision, reduceMotion, enhancedFocus]);
 
   return (
     <AccessibilityContext.Provider value={{ theme, textSize, colorVision, reduceMotion, enhancedFocus, setTheme, setTextSize, setColorVision, setReduceMotion, setEnhancedFocus }}>
