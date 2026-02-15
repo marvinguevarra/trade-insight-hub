@@ -87,65 +87,58 @@ const ResultsPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-foreground">{metadata?.symbol || "—"}</h1>
-            <Badge variant="outline" className="border-primary/30 text-primary text-[10px] uppercase">
-              {metadata?.tier || "standard"}
-            </Badge>
-            {metadata?.timeframe && (
-              <span className="text-xs text-muted-foreground">{metadata.timeframe} &middot; {metadata.bars} bars</span>
+      {/* Sticky Results Header */}
+      <div className="sticky top-12 z-40 border-b border-border bg-gradient-to-r from-background to-card backdrop-blur-md shadow-lg">
+        <div className="mx-auto max-w-6xl px-6 py-4">
+          {/* Row 1: Symbol + metadata + actions */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-foreground">{metadata?.symbol || "—"}</h1>
+              <Badge variant="outline" className="border-primary/30 text-primary text-[10px] uppercase">
+                {metadata?.tier || "standard"}
+              </Badge>
+              {metadata?.timeframe && (
+                <span className="text-xs text-muted-foreground">{metadata.timeframe} &middot; {metadata.bars} bars</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => {
+                const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = `${metadata?.symbol || "analysis"}.json`; a.click();
+              }}>
+                <Download className="mr-1 h-3 w-3" /> JSON
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs">
+                <Share2 className="mr-1 h-3 w-3" /> Share
+              </Button>
+            </div>
+          </div>
+
+          {/* Row 2: Price + Verdict inline */}
+          <div className="mt-3 flex flex-wrap items-end gap-8">
+            {technical?.current_price && (
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Price</span>
+                <p className="text-2xl font-bold text-foreground">${technical.current_price}</p>
+              </div>
+            )}
+            {synthesis?.verdict && (
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Verdict</span>
+                <p className={`mt-1 inline-block border px-2 py-0.5 text-xs font-bold ${verdictColors[synthesis.verdict] || "text-foreground"}`}>
+                  {synthesis.verdict}
+                </p>
+              </div>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => {
-              const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url; a.download = `${metadata?.symbol || "analysis"}.json`; a.click();
-            }}>
-              <Download className="mr-1 h-3 w-3" /> JSON
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs">
-              <Share2 className="mr-1 h-3 w-3" /> Share
-            </Button>
-          </div>
         </div>
+      </div>
 
-        {/* Price + Cost banner */}
-        <div className="mt-4 flex flex-wrap gap-6 text-sm">
-          {technical?.current_price && (
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Price</span>
-              <p className="text-lg font-bold text-foreground">${technical.current_price}</p>
-            </div>
-          )}
-          {cost_summary && (
-            <>
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Cost</span>
-                <p className="text-lg font-bold text-primary">${cost_summary.total_cost?.toFixed(3)}</p>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Time</span>
-                <p className="text-lg font-bold text-foreground">{(cost_summary.execution_time_ms / 1000).toFixed(1)}s</p>
-              </div>
-            </>
-          )}
-          {synthesis?.verdict && (
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Verdict</span>
-              <p className={`mt-1 inline-block border px-2 py-0.5 text-xs font-bold ${verdictColors[synthesis.verdict] || "text-foreground"}`}>
-                {synthesis.verdict}
-              </p>
-            </div>
-          )}
-        </div>
-
+      <div className="mx-auto max-w-6xl px-6 py-8">
         {/* Tabs */}
-        <Tabs defaultValue="technical" className="mt-8">
+        <Tabs defaultValue="technical" className="mt-0">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="technical" className="text-xs uppercase tracking-wider">Technical</TabsTrigger>
             <TabsTrigger value="news" className="text-xs uppercase tracking-wider">News</TabsTrigger>
