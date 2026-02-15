@@ -94,44 +94,6 @@ const Analyze = () => {
     }
   };
 
-  const handleSample = async () => {
-    setSymbol("WHR");
-    setFile(null);
-    setLoading(true);
-    setError(null);
-    setCurrentStep(0);
-
-    try {
-      // Fetch the sample CSV first
-      const csvResponse = await fetch(`${API_URL}/analyze/sample/NYSE_WHR__1M.csv`);
-      if (!csvResponse.ok) throw new Error("Could not load sample data.");
-      const csvBlob = await csvResponse.blob();
-      const csvFile = new File([csvBlob], "NYSE_WHR__1M.csv", { type: "text/csv" });
-
-      const formData = new FormData();
-      formData.append("file", csvFile);
-      formData.append("symbol", "WHR");
-      formData.append("tier", tier);
-      formData.append("min_gap_pct", "2.0");
-
-      const response = await fetch(`${API_URL}/analyze/full`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Analysis failed.");
-      const data = await response.json();
-      navigate("/results/live", { state: { result: data } });
-    } catch (err: any) {
-      const message = err.message || "Could not load sample data.";
-      setError(message);
-      toast({ title: "Error", description: message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-      setCurrentStep(0);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -283,20 +245,6 @@ const Analyze = () => {
             )}
           </Button>
 
-          {/* Sample data */}
-          {!loading && (
-            <div className="flex justify-center">
-              <Button
-                variant="ghost"
-                onClick={handleSample}
-                disabled={loading}
-                className="text-xs text-muted-foreground"
-              >
-                <Sparkles className="mr-2 h-3 w-3" />
-                Try with sample data (WHR)
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
