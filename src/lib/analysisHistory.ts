@@ -1,48 +1,55 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface AnalysisRecord {
   id: string;
   symbol: string;
-  date: string;
+  created_at: string;
   tier: string;
   cost: number;
-  status: "complete" | "failed";
   verdict?: string;
-  fullResults?: any;
+  full_results?: any;
 }
 
-const STORAGE_KEY = "analysis_history";
-const MAX_RECORDS = 10;
+export async function getAnalysisHistory(): Promise<AnalysisRecord[]> {
+  const { data, error } = await supabase
+    .from("analyses")
+    .select("id, symbol, tier, cost, verdict, full_results, created_at")
+    .order("created_at", { ascending: false });
 
-export function getAnalysisHistory(): AnalysisRecord[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+  if (error) {
+    console.error("Failed to load analyses:", error);
     return [];
   }
+  return data || [];
 }
 
-export function saveAnalysis(record: Omit<AnalysisRecord, "id" | "date">): void {
-  const history = getAnalysisHistory();
-  const newRecord: AnalysisRecord = {
-    ...record,
-    id: crypto.randomUUID(),
-    date: new Date().toISOString(),
-  };
-  const updated = [newRecord, ...history].slice(0, MAX_RECORDS);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  } catch {
-    // If storage full, try without fullResults on oldest entries
-    const trimmed = updated.map((r, i) => i > 4 ? { ...r, fullResults: undefined } : r);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  }
+export async function saveAnalysis(record: {
+  symbol: string;
+  tier: string;
+  cost: number;
+  verdict?: string;
+  fullResults: any;
+}): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase.from("analyses").insert({
+    user_id: user.id,
+    symbol: record.symbol,
+    tier: record.tier,
+    cost: record.cost,
+    verdict: record.verdict || null,
+    full_results: record.fullResults || {},
+  });
+
+  if (error) console.error("Failed to save analysis:", error);
 }
 
-export function getAnalysisById(id: string): AnalysisRecord | undefined {
-  return getAnalysisHistory().find((r) => r.id === id);
-}
-
-export function getStorageSizeMB(): string {
-  const raw = localStorage.getItem(STORAGE_KEY) || "[]";
-  return (new Blob([raw]).size / (1024 * 1024)).toFixed(2);
+export async function getAnalysisById(id: string): Promise<AnalysisRecord | null> {
+  const { data } = await supabase
+    .from("analyses")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data || null;
 }

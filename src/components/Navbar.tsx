@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { Activity } from "lucide-react";
+import { Activity, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { to: "/analyze", label: "Analyze" },
@@ -11,6 +13,7 @@ const navLinks = [
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -50,6 +53,17 @@ const Navbar = () => {
             {link.label}
           </Link>
         ))}
+        {user && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="h-3.5 w-3.5 mr-1" />
+            Sign Out
+          </Button>
+        )}
       </nav>
     </header>
   );
