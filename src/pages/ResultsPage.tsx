@@ -12,11 +12,11 @@ import { useBullBearColors } from "@/hooks/useBullBearColors";
 import Navbar from "@/components/Navbar";
 
 const verdictColors: Record<string, string> = {
-  STRONG_BULL: "bg-green-500/20 text-green-400 border-green-500/30",
-  MODERATE_BULL: "bg-green-500/10 text-green-300 border-green-500/20",
+  STRONG_BULL: "bg-bull/20 text-bull border-bull/30",
+  MODERATE_BULL: "bg-bull/10 text-bull border-bull/20",
   NEUTRAL: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
-  MODERATE_BEAR: "bg-red-500/10 text-red-300 border-red-500/20",
-  STRONG_BEAR: "bg-red-500/20 text-red-400 border-red-500/30",
+  MODERATE_BEAR: "bg-bear/10 text-bear border-bear/20",
+  STRONG_BEAR: "bg-bear/20 text-bear border-bear/30",
 };
 
 // Pagination hook
@@ -180,7 +180,7 @@ const ResultsPage = () => {
                             <TableCell>
                               <DirectionBadge direction={g.direction} />
                             </TableCell>
-                            <TableCell className={`text-xs font-mono ${g.direction === "up" ? "text-green-400" : "text-red-400"}`}>
+                            <TableCell className={`text-xs font-mono ${g.direction === "up" ? "text-bull" : "text-bear"}`}>
                               {g.size_percent?.toFixed(1) || g.gap_pct?.toFixed(1)}%
                             </TableCell>
                             <TableCell className="text-xs">{g.type || "—"}</TableCell>
@@ -261,7 +261,7 @@ const ResultsPage = () => {
             {technical?.supply_demand && (
               <div className="grid gap-6 md:grid-cols-2 items-stretch">
                 {/* Demand Zones */}
-                <Card className="border-green-500/20 bg-card flex flex-col">
+                <Card className="border-bull/20 bg-card flex flex-col">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ const ResultsPage = () => {
                         const currentPrice = technical.current_price || 0;
                         const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
                         return (
-                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-green-500/50 ${zone.fresh ? "border-green-500/30 bg-green-500/5" : "border-border bg-secondary/30"}`}>
+                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-bull ${zone.fresh ? "border-bull/30 bg-bull/5" : "border-border bg-secondary/30"}`}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
@@ -293,7 +293,7 @@ const ResultsPage = () => {
                             </div>
                             <div className="flex items-center justify-between mt-1 text-[10px]">
                               <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
-                              <span className={distPct >= 0 ? "text-green-400" : "text-red-400"}>
+                              <span className={distPct >= 0 ? "text-bull" : "text-bear"}>
                                 {distPct >= 0 ? "+" : ""}{distPct.toFixed(1)}% away
                               </span>
                             </div>
@@ -311,7 +311,7 @@ const ResultsPage = () => {
                 </Card>
 
                 {/* Supply Zones */}
-                <Card className="border-red-500/20 bg-card flex flex-col">
+                <Card className="border-bear/20 bg-card flex flex-col">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ const ResultsPage = () => {
                         const currentPrice = technical.current_price || 0;
                         const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
                         return (
-                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-red-500/50 ${zone.fresh ? "border-red-500/30 bg-red-500/5" : "border-border bg-secondary/30"}`}>
+                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-bear ${zone.fresh ? "border-bear/30 bg-bear/5" : "border-border bg-secondary/30"}`}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
@@ -343,7 +343,7 @@ const ResultsPage = () => {
                             </div>
                             <div className="flex items-center justify-between mt-1 text-[10px]">
                               <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
-                              <span className={distPct >= 0 ? "text-green-400" : "text-red-400"}>
+                              <span className={distPct >= 0 ? "text-bull" : "text-bear"}>
                                 {distPct >= 0 ? "+" : ""}{distPct.toFixed(1)}% away
                               </span>
                             </div>
@@ -460,11 +460,11 @@ const ResultsPage = () => {
                 <div className="grid gap-6 md:grid-cols-2">
                   {fundamental.key_risks?.length > 0 && (
                     <Card className="border-border bg-card">
-                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-red-400">Key Risks</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
                       <CardContent className="space-y-1">
                         {fundamental.key_risks.map((r: string, i: number) => (
                           <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                            <AlertTriangle className="h-3 w-3 text-red-400 shrink-0 mt-0.5" />
+                            <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" />
                             {r}
                           </p>
                         ))}
@@ -473,11 +473,11 @@ const ResultsPage = () => {
                   )}
                   {fundamental.opportunities?.length > 0 && (
                     <Card className="border-border bg-card">
-                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-green-400">Opportunities</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Opportunities</CardTitle></CardHeader>
                       <CardContent className="space-y-1">
                         {fundamental.opportunities.map((o: string, i: number) => (
                           <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                            <Sparkles className="h-3 w-3 text-green-400 shrink-0 mt-0.5" />
+                            <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" />
                             {o}
                           </p>
                         ))}
