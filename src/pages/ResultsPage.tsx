@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
+import { useBullBearColors } from "@/hooks/useBullBearColors";
 import Navbar from "@/components/Navbar";
 
 const verdictColors: Record<string, string> = {
@@ -49,6 +50,7 @@ const PaginationControls = ({ page, totalPages, setPage }: { page: number; total
 const ResultsPage = () => {
   const location = useLocation();
   const result = location.state?.result;
+  const bb = useBullBearColors();
 
   // Pagination states
   const supportPag = usePagination(result?.technical?.support_resistance?.support_levels || [], 5);
@@ -200,12 +202,12 @@ const ResultsPage = () => {
                 {/* Support */}
                 <Card className="border-border bg-card flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-xs uppercase tracking-widest text-green-400">Support Levels</CardTitle>
+                    <CardTitle className={`text-xs uppercase tracking-widest ${bb.bull}`}>Support Levels</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <div className="space-y-2 flex-1">
                       {supportPag.paged.map((level: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between border border-border p-2 border-l-4 border-l-green-500/40">
+                        <div key={i} className={`flex items-center justify-between border border-border p-2 border-l-4 ${bb.bullBorder}/40`}>
                           <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
                           {level.strength != null && (
                             <div className="flex items-center gap-2">
@@ -228,12 +230,12 @@ const ResultsPage = () => {
                 {/* Resistance */}
                 <Card className="border-border bg-card flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-xs uppercase tracking-widest text-red-400">Resistance Levels</CardTitle>
+                    <CardTitle className={`text-xs uppercase tracking-widest ${bb.bear}`}>Resistance Levels</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <div className="space-y-2 flex-1">
                       {resistPag.paged.map((level: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between border border-border p-2 border-l-4 border-l-red-500/40">
+                        <div key={i} className={`flex items-center justify-between border border-border p-2 border-l-4 ${bb.bearBorder}/40`}>
                           <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
                           {level.strength != null && (
                             <div className="flex items-center gap-2">
@@ -263,8 +265,8 @@ const ResultsPage = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-green-400" />
-                        <CardTitle className="text-xs uppercase tracking-widest text-green-400">Demand Zones</CardTitle>
+                        <TrendingUp className={`h-4 w-4 ${bb.bullIcon}`} />
+                        <CardTitle className={`text-xs uppercase tracking-widest ${bb.bull}`}>Demand Zones</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[10px]">
                         {(technical.supply_demand.demand_zones || []).filter((z: any) => z.fresh).length} fresh
@@ -313,8 +315,8 @@ const ResultsPage = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <TrendingDown className="h-4 w-4 text-red-400" />
-                        <CardTitle className="text-xs uppercase tracking-widest text-red-400">Supply Zones</CardTitle>
+                        <TrendingDown className={`h-4 w-4 ${bb.bearIcon}`} />
+                        <CardTitle className={`text-xs uppercase tracking-widest ${bb.bear}`}>Supply Zones</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[10px]">
                         {(technical.supply_demand.supply_zones || []).filter((z: any) => z.fresh).length} fresh
@@ -524,11 +526,11 @@ const ResultsPage = () => {
                 {/* Bull vs Bear — side by side below */}
                 <div className="grid gap-6 md:grid-cols-2">
                   {synthesis.bull_case && (
-                    <Card className="border-l-4 border-l-green-500 bg-card">
+                    <Card className={`border-l-4 ${bb.bullBorder} bg-card`}>
                       <CardHeader>
                         <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-green-400" />
-                          <CardTitle className="text-xs uppercase tracking-widest text-green-400">Bull Case</CardTitle>
+                          <TrendingUp className={`h-4 w-4 ${bb.bullIcon}`} />
+                          <CardTitle className={`text-xs uppercase tracking-widest ${bb.bull}`}>Bull Case</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -538,7 +540,7 @@ const ResultsPage = () => {
                             <ul className="space-y-1.5" role="list">
                               {synthesis.bull_case.factors.map((f: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
-                                  <span className="text-green-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
+                                  <span className={`${bb.bull} mt-0.5 shrink-0`} aria-hidden="true">&#9650;</span>
                                   <span>{f}</span>
                                 </li>
                               ))}
@@ -551,7 +553,7 @@ const ResultsPage = () => {
                             <ul className="space-y-1.5" role="list">
                               {synthesis.bull_case.evidence.map((e: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-[1.6] text-foreground/85">
-                                  <span className="text-green-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
+                                  <span className={`${bb.bull} mt-0.5 shrink-0`} aria-hidden="true">&#9650;</span>
                                   <span>{e}</span>
                                 </li>
                               ))}
@@ -566,11 +568,11 @@ const ResultsPage = () => {
                   )}
 
                   {synthesis.bear_case && (
-                    <Card className="border-l-4 border-l-red-500 bg-card">
+                    <Card className={`border-l-4 ${bb.bearBorder} bg-card`}>
                       <CardHeader>
                         <div className="flex items-center gap-2">
-                          <TrendingDown className="h-4 w-4 text-red-400" />
-                          <CardTitle className="text-xs uppercase tracking-widest text-red-400">Bear Case</CardTitle>
+                          <TrendingDown className={`h-4 w-4 ${bb.bearIcon}`} />
+                          <CardTitle className={`text-xs uppercase tracking-widest ${bb.bear}`}>Bear Case</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -580,7 +582,7 @@ const ResultsPage = () => {
                             <ul className="space-y-1.5" role="list">
                               {synthesis.bear_case.factors.map((f: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
-                                  <span className="text-red-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
+                                  <span className={`${bb.bear} mt-0.5 shrink-0`} aria-hidden="true">&#9660;</span>
                                   <span>{f}</span>
                                 </li>
                               ))}
@@ -593,7 +595,7 @@ const ResultsPage = () => {
                             <ul className="space-y-1.5" role="list">
                               {synthesis.bear_case.evidence.map((e: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-[1.6] text-foreground/85">
-                                  <span className="text-red-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
+                                  <span className={`${bb.bear} mt-0.5 shrink-0`} aria-hidden="true">&#9660;</span>
                                   <span>{e}</span>
                                 </li>
                               ))}

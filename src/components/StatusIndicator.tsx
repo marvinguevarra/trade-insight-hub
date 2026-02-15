@@ -1,6 +1,7 @@
 import { Check, Clock, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useBullBearColors } from "@/hooks/useBullBearColors";
 
 export const FreshDot = () => (
   <span className="inline-flex items-center gap-1.5">
@@ -30,18 +31,20 @@ export const UnfilledIcon = () => (
   </span>
 );
 
-export const DirectionBadge = ({ direction }: { direction: "up" | "down" }) =>
-  direction === "up" ? (
-    <span className="inline-flex items-center gap-1 text-green-400">
+export const DirectionBadge = ({ direction }: { direction: "up" | "down" }) => {
+  const bb = useBullBearColors();
+  return direction === "up" ? (
+    <span className={`inline-flex items-center gap-1 ${bb.bull}`}>
       <ChevronUp className="h-4 w-4" />
       <span className="text-xs font-medium">Up</span>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-red-400">
+    <span className={`inline-flex items-center gap-1 ${bb.bear}`}>
       <ChevronDown className="h-4 w-4" />
       <span className="text-xs font-medium">Down</span>
     </span>
   );
+};
 
 export const TierBadge = ({ tier }: { tier: string }) => {
   const config: Record<string, { label: string; className: string }> = {
