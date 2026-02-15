@@ -53,7 +53,7 @@ const Navbar = () => {
             {link.label}
           </Link>
         ))}
-        {user && (
+        {user ? (
           <Button
             variant="ghost"
             size="sm"
@@ -63,6 +63,18 @@ const Navbar = () => {
             <LogOut className="h-3.5 w-3.5 mr-1" />
             Sign Out
           </Button>
+        ) : (
+          <Link
+            to="/auth"
+            className={cn(
+              "text-xs uppercase tracking-widest transition-colors",
+              location.pathname === "/auth"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Sign In
+          </Link>
         )}
       </nav>
     </header>
