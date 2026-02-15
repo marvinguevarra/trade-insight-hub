@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
-const API_URL = "https://trading-analyzer-production-7513.up.railway.app";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const tierInfo: Record<string, { label: string; cost: string }> = {
   lite: { label: "Lite", cost: "$0.30–0.50" },

@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 
 const Settings = () => {
-  const [apiUrl, setApiUrl] = useState("https://trading-analyzer-production-7513.up.railway.app");
+  
   const [defaultTier, setDefaultTier] = useState("standard");
   const [budgetLimit, setBudgetLimit] = useState("10");
   const [darkMode, setDarkMode] = useState(true);
@@ -25,21 +25,6 @@ const Settings = () => {
         <h1 className="text-2xl font-bold text-foreground">SETTINGS</h1>
 
         <div className="mt-8 space-y-6">
-          {/* API */}
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="text-xs uppercase tracking-widest">API Configuration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Backend URL
-                </label>
-                <Input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} className="bg-background" />
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Defaults */}
           <Card className="border-border bg-card">
             <CardHeader>
