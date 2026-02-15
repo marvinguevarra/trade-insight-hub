@@ -7,16 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileText, X, Loader2, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, Loader2, AlertCircle, Check, DollarSign, Crown } from "lucide-react";
 import { saveAnalysis } from "@/lib/analysisHistory";
+import { TierBadge } from "@/components/StatusIndicator";
 import Navbar from "@/components/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const tierInfo: Record<string, { label: string; cost: string; icon: string }> = {
-  lite: { label: "Lite", cost: "Free", icon: "✅" },
-  standard: { label: "Standard", cost: "$2–3", icon: "💰" },
-  premium: { label: "Premium", cost: "$4–6", icon: "💎" },
+const tierInfo: Record<string, { label: string; cost: string }> = {
+  lite: { label: "Lite", cost: "Free" },
+  standard: { label: "Standard", cost: "$2–3" },
+  premium: { label: "Premium", cost: "$4–6" },
 };
 
 const loadingSteps = [
@@ -38,7 +39,6 @@ const Analyze = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Progress through loading steps on a timer
   useEffect(() => {
     if (!loading) return;
     if (currentStep >= loadingSteps.length - 1) return;
@@ -137,15 +137,15 @@ const Analyze = () => {
                   <span>Step {currentStep + 1} of {loadingSteps.length}</span>
                   <span>~15-20s total</span>
                 </div>
-                {/* Step indicators */}
                 <div className="space-y-1">
                   {loadingSteps.map((step, i) => (
-                    <div key={i} className={`text-[10px] font-mono ${
+                    <div key={i} className={`text-[10px] font-mono flex items-center gap-2 ${
                       i < currentStep ? "text-primary" :
                       i === currentStep ? "text-foreground" :
                       "text-muted-foreground/40"
                     }`}>
-                      {i < currentStep ? "✓" : i === currentStep ? "▶" : "○"} {step.label}
+                      {i < currentStep ? <Check className="h-3 w-3" /> : i === currentStep ? <Loader2 className="h-3 w-3 animate-spin" /> : <span className="h-3 w-3 inline-flex items-center justify-center text-[8px]">-</span>}
+                      {step.label}
                     </div>
                   ))}
                 </div>
@@ -220,9 +220,24 @@ const Analyze = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lite">✅ Lite — Free</SelectItem>
-                    <SelectItem value="standard">💰 Standard — $2–3</SelectItem>
-                    <SelectItem value="premium">💎 Premium — $4–6</SelectItem>
+                    <SelectItem value="lite">
+                      <span className="inline-flex items-center gap-2">
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                        Lite — Free
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="standard">
+                      <span className="inline-flex items-center gap-2">
+                        <DollarSign className="h-3.5 w-3.5 text-primary" />
+                        Standard — $2–3
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="premium">
+                      <span className="inline-flex items-center gap-2">
+                        <Crown className="h-3.5 w-3.5 text-yellow-400" />
+                        Premium — $4–6
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -233,7 +248,10 @@ const Analyze = () => {
           {!loading && (file || symbol) && (
             <div className="flex items-center justify-between border border-border p-3 text-xs text-muted-foreground">
               <span>Estimated cost</span>
-              <span className="text-foreground font-bold">{tierInfo[tier].icon} {tierInfo[tier].cost}</span>
+              <span className="text-foreground font-bold inline-flex items-center gap-2">
+                <TierBadge tier={tier} />
+                {tierInfo[tier].cost}
+              </span>
             </div>
           )}
 
