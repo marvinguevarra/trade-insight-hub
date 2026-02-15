@@ -33,7 +33,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: { emailRedirectTo: "https://trade-insight-hub-njdb.vercel.app" },
       });
       if (error) {
         setError(error.message);
