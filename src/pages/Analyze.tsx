@@ -98,6 +98,7 @@ const Analyze = () => {
         cost: data.cost_summary?.total_cost || 0,
         status: "complete",
         verdict: data.synthesis?.verdict,
+        fullResults: data,
       });
       navigate("/results/live", { state: { result: data } });
     } catch (err: any) {

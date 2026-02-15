@@ -1,16 +1,44 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart3, ArrowRight } from "lucide-react";
+import { BarChart3, ArrowRight, Eye, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import { getAnalysisHistory } from "@/lib/analysisHistory";
+import { getAnalysisHistory, type AnalysisRecord } from "@/lib/analysisHistory";
 
 const Dashboard = () => {
   const history = getAnalysisHistory();
   const totalSpent = history.reduce((s, h) => s + h.cost, 0);
   const avgCost = history.length > 0 ? totalSpent / history.length : 0;
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const viewReport = (record: AnalysisRecord) => {
+    if (!record.fullResults) {
+      toast({ title: "Report unavailable", description: "Full results were not stored for this analysis.", variant: "destructive" });
+      return;
+    }
+    navigate("/results/history", {
+      state: { result: record.fullResults, isHistorical: true, analysisDate: record.date },
+    });
+  };
+
+  const downloadReport = (e: React.MouseEvent, record: AnalysisRecord) => {
+    e.stopPropagation();
+    if (!record.fullResults) {
+      toast({ title: "No data", description: "Full results not available.", variant: "destructive" });
+      return;
+    }
+    const blob = new Blob([JSON.stringify(record.fullResults, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${record.symbol}_${record.tier}_${record.date.split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,9 +89,9 @@ const Dashboard = () => {
               Run your first analysis to see results here.
             </p>
             <Button asChild className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link to="/analyze">
+              <a href="/analyze">
                 Run Analysis <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              </a>
             </Button>
           </div>
         ) : (
@@ -78,12 +106,17 @@ const Dashboard = () => {
                     <TableHead className="text-[10px] uppercase">Cost</TableHead>
                     <TableHead className="text-[10px] uppercase">Verdict</TableHead>
                     <TableHead className="text-[10px] uppercase">Status</TableHead>
+                    <TableHead className="text-[10px] uppercase">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {history.map((h) => (
-                    <TableRow key={h.id}>
-                      <TableCell className="text-xs">{h.date}</TableCell>
+                    <TableRow
+                      key={h.id}
+                      className={h.fullResults ? "cursor-pointer hover:bg-secondary/50 transition-colors" : ""}
+                      onClick={() => h.fullResults && viewReport(h)}
+                    >
+                      <TableCell className="text-xs">{h.date.split("T")[0]}</TableCell>
                       <TableCell className="text-xs font-bold">{h.symbol}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-[10px] uppercase">
@@ -99,6 +132,30 @@ const Dashboard = () => {
                         >
                           {h.status.toUpperCase()}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={!h.fullResults}
+                            onClick={(e) => { e.stopPropagation(); viewReport(h); }}
+                            aria-label={`View ${h.symbol} report`}
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" /> View
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={!h.fullResults}
+                            onClick={(e) => downloadReport(e, h)}
+                            aria-label={`Download ${h.symbol} report`}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

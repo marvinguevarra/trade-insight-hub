@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import Navbar from "@/components/Navbar";
@@ -50,6 +51,8 @@ const PaginationControls = ({ page, totalPages, setPage }: { page: number; total
 const ResultsPage = () => {
   const location = useLocation();
   const result = location.state?.result;
+  const isHistorical = location.state?.isHistorical || false;
+  const analysisDate = location.state?.analysisDate;
   const bb = useBullBearColors();
 
   // Pagination states
@@ -139,6 +142,14 @@ const ResultsPage = () => {
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-8">
+        {isHistorical && analysisDate && (
+          <Alert className="mb-6 border-primary/30 bg-primary/5">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-xs text-foreground">
+              Historical report from {new Date(analysisDate).toLocaleString()}
+            </AlertDescription>
+          </Alert>
+        )}
         {/* Tabs */}
         <Tabs defaultValue="technical" className="mt-0">
           <TabsList className="bg-card border border-border">
