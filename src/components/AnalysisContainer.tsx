@@ -13,12 +13,12 @@ import AdvancedDataForm from "@/components/AdvancedDataForm";
 const API_URL = import.meta.env.VITE_API_URL || "https://trading-analyzer-production-7513.up.railway.app";
 const API_TIMEOUT = 90000; // 90 seconds
 
-const loadingSteps = [
-  { label: "PARSING DATA...", duration: 2000 },
-  { label: "ANALYZING TECHNICAL PATTERNS...", duration: 4000 },
-  { label: "FETCHING NEWS...", duration: 3000 },
+const getLoadingSteps = (ticker: string) => [
+  { label: `FETCHING ${ticker || "MARKET"} DATA...`, duration: 3000 },
+  { label: "ANALYZING TECHNICAL INDICATORS...", duration: 5000 },
+  { label: "GATHERING NEWS & SENTIMENT...", duration: 4000 },
   { label: "ANALYZING SEC FILINGS...", duration: 5000 },
-  { label: "GENERATING SYNTHESIS...", duration: 4000 },
+  { label: "GENERATING AI INSIGHTS...", duration: 5000 },
 ];
 
 const friendlyErrors: Record<string, string> = {
@@ -48,6 +48,7 @@ const AnalysisContainer = () => {
   const abortRef = useRef<AbortController | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const loadingSteps = getLoadingSteps(ticker.toUpperCase());
 
   // Debounce mode switching — disable toggle during loading
   const handleModeChange = useCallback((newMode: "quick" | "advanced") => {
@@ -174,7 +175,7 @@ const AnalysisContainer = () => {
             <Progress value={progressPercent} className="h-1" />
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>Step {currentStep + 1} of {loadingSteps.length}</span>
-              <span>~15-20s total</span>
+              <span>~60-90s total</span>
             </div>
             <div className="space-y-1">
               {loadingSteps.map((step, i) => (
