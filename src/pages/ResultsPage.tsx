@@ -497,9 +497,34 @@ const ResultsPage = () => {
           <TabsContent value="synthesis" className="mt-6 space-y-6">
             {synthesis ? (
               <>
+                {/* AI Reasoning — top, prominent */}
+                {synthesis.reasoning && (
+                  <Card className="border-l-4 border-l-primary bg-primary/5">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Brain className="h-5 w-5 text-primary" />
+                          <CardTitle className="text-xs uppercase tracking-widest text-primary">AI Reasoning &amp; Verdict</CardTitle>
+                        </div>
+                        {synthesis.verdict && (
+                          <span className={`inline-block border px-2 py-0.5 text-xs font-bold ${verdictColors[synthesis.verdict] || "text-foreground"}`}>
+                            {synthesis.verdict}
+                          </span>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                        {synthesis.reasoning}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Bull vs Bear — side by side below */}
                 <div className="grid gap-6 md:grid-cols-2">
                   {synthesis.bull_case && (
-                    <Card className="border-green-500/20 bg-card">
+                    <Card className="border-l-4 border-l-green-500 bg-card">
                       <CardHeader>
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-green-400" />
@@ -517,7 +542,7 @@ const ResultsPage = () => {
                   )}
 
                   {synthesis.bear_case && (
-                    <Card className="border-red-500/20 bg-card">
+                    <Card className="border-l-4 border-l-red-500 bg-card">
                       <CardHeader>
                         <div className="flex items-center gap-2">
                           <TrendingDown className="h-4 w-4 text-red-400" />
@@ -534,22 +559,6 @@ const ResultsPage = () => {
                     </Card>
                   )}
                 </div>
-
-                {synthesis.reasoning && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Brain className="h-4 w-4 text-primary" />
-                        <CardTitle className="text-xs uppercase tracking-widest">AI Reasoning</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
-                        {synthesis.reasoning}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
               </>
             ) : (
               <Card className="border-border bg-card">
