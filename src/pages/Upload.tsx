@@ -83,8 +83,9 @@ const Upload = () => {
       const formData = new FormData();
       formData.append("file", file);
 
+      const API_URL = import.meta.env.VITE_API_URL || "https://trading-analyzer-production-7513.up.railway.app";
       const response = await fetch(
-        "https://trading-analyzer-production-7513.up.railway.app/analyze",
+        `${API_URL}/analyze`,
         { method: "POST", body: formData }
       );
 
