@@ -35,12 +35,6 @@ const Navbar = () => {
             {link.label}
           </Link>
         ))}
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 bg-success animate-pulse-glow" />
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Online
-          </span>
-        </div>
       </div>
     </nav>
   );

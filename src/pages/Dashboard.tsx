@@ -2,21 +2,16 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { BarChart3, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
-
-const mockHistory = [
-  { id: "1", date: "2026-02-15", symbol: "AAPL", tier: "standard", cost: 2.40, status: "complete" },
-  { id: "2", date: "2026-02-14", symbol: "WHR", tier: "premium", cost: 5.80, status: "complete" },
-  { id: "3", date: "2026-02-13", symbol: "MSFT", tier: "lite", cost: 0.35, status: "complete" },
-  { id: "4", date: "2026-02-12", symbol: "TSLA", tier: "standard", cost: 2.10, status: "failed" },
-  { id: "5", date: "2026-02-10", symbol: "NVDA", tier: "premium", cost: 6.20, status: "complete" },
-];
-
-const totalSpent = mockHistory.reduce((s, h) => s + h.cost, 0);
+import { getAnalysisHistory } from "@/lib/analysisHistory";
 
 const Dashboard = () => {
+  const history = getAnalysisHistory();
+  const totalSpent = history.reduce((s, h) => s + h.cost, 0);
+  const avgCost = history.length > 0 ? totalSpent / history.length : 0;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -32,7 +27,7 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-foreground">{mockHistory.length}</p>
+              <p className="text-3xl font-bold text-foreground">{history.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border bg-card">
@@ -52,46 +47,42 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-foreground">
-                ${(totalSpent / mockHistory.length).toFixed(2)}
-              </p>
+              <p className="text-3xl font-bold text-foreground">${avgCost.toFixed(2)}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Input placeholder="Filter symbol..." className="w-40 bg-card text-xs" />
-          <Select>
-            <SelectTrigger className="w-32 bg-card text-xs">
-              <SelectValue placeholder="Tier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="lite">Lite</SelectItem>
-              <SelectItem value="standard">Standard</SelectItem>
-              <SelectItem value="premium">Premium</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Table */}
-        <Card className="mt-4 border-border bg-card">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-[10px] uppercase">Date</TableHead>
-                  <TableHead className="text-[10px] uppercase">Symbol</TableHead>
-                  <TableHead className="text-[10px] uppercase">Tier</TableHead>
-                  <TableHead className="text-[10px] uppercase">Cost</TableHead>
-                  <TableHead className="text-[10px] uppercase">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockHistory.map((h) => (
-                  <TableRow key={h.id} className="cursor-pointer" onClick={() => {}}>
-                    <Link to={`/results/${h.id}`} className="contents">
+        {/* Empty state or table */}
+        {history.length === 0 ? (
+          <div className="mt-16 flex flex-col items-center justify-center text-center">
+            <BarChart3 className="h-16 w-16 text-muted-foreground/30" />
+            <h2 className="mt-6 text-lg font-bold text-foreground">No analyses yet</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Run your first analysis to see results here.
+            </p>
+            <Button asChild className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Link to="/analyze">
+                Run Analysis <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <Card className="mt-6 border-border bg-card">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-[10px] uppercase">Date</TableHead>
+                    <TableHead className="text-[10px] uppercase">Symbol</TableHead>
+                    <TableHead className="text-[10px] uppercase">Tier</TableHead>
+                    <TableHead className="text-[10px] uppercase">Cost</TableHead>
+                    <TableHead className="text-[10px] uppercase">Verdict</TableHead>
+                    <TableHead className="text-[10px] uppercase">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.map((h) => (
+                    <TableRow key={h.id}>
                       <TableCell className="text-xs">{h.date}</TableCell>
                       <TableCell className="text-xs font-bold">{h.symbol}</TableCell>
                       <TableCell>
@@ -100,6 +91,7 @@ const Dashboard = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">${h.cost.toFixed(2)}</TableCell>
+                      <TableCell className="text-xs font-mono">{h.verdict || "—"}</TableCell>
                       <TableCell>
                         <Badge
                           variant={h.status === "complete" ? "default" : "destructive"}
@@ -108,13 +100,13 @@ const Dashboard = () => {
                           {h.status.toUpperCase()}
                         </Badge>
                       </TableCell>
-                    </Link>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

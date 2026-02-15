@@ -7,15 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileText, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, Loader2, AlertCircle } from "lucide-react";
+import { saveAnalysis } from "@/lib/analysisHistory";
 import Navbar from "@/components/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const tierInfo: Record<string, { label: string; cost: string }> = {
-  lite: { label: "Lite", cost: "$0.30–0.50" },
-  standard: { label: "Standard", cost: "$2–3" },
-  premium: { label: "Premium", cost: "$5–7" },
+const tierInfo: Record<string, { label: string; cost: string; icon: string }> = {
+  lite: { label: "Lite", cost: "Free", icon: "✅" },
+  standard: { label: "Standard", cost: "$2–3", icon: "💰" },
+  premium: { label: "Premium", cost: "$4–6", icon: "💎" },
 };
 
 const loadingSteps = [
@@ -83,10 +84,18 @@ const Analyze = () => {
       }
 
       const data = await response.json();
+      saveAnalysis({
+        symbol: data.metadata?.symbol || symbol || "UNKNOWN",
+        tier,
+        cost: data.cost_summary?.total_cost || 0,
+        status: "complete",
+        verdict: data.synthesis?.verdict,
+      });
       navigate("/results/live", { state: { result: data } });
     } catch (err: any) {
       const message = err.message || "Could not reach the backend.";
       setError(message);
+      saveAnalysis({ symbol: symbol || "UNKNOWN", tier, cost: 0, status: "failed" });
       toast({ title: "Analysis failed", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -211,9 +220,9 @@ const Analyze = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lite">Lite — $0.30–0.50</SelectItem>
-                    <SelectItem value="standard">Standard — $2–3</SelectItem>
-                    <SelectItem value="premium">Premium — $5–7</SelectItem>
+                    <SelectItem value="lite">✅ Lite — Free</SelectItem>
+                    <SelectItem value="standard">💰 Standard — $2–3</SelectItem>
+                    <SelectItem value="premium">💎 Premium — $4–6</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -224,7 +233,7 @@ const Analyze = () => {
           {!loading && (file || symbol) && (
             <div className="flex items-center justify-between border border-border p-3 text-xs text-muted-foreground">
               <span>Estimated cost</span>
-              <span className="text-foreground font-bold">{tierInfo[tier].cost}</span>
+              <span className="text-foreground font-bold">{tierInfo[tier].icon} {tierInfo[tier].cost}</span>
             </div>
           )}
 
