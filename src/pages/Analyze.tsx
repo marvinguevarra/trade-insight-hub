@@ -16,15 +16,15 @@ import Navbar from "@/components/Navbar";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const tierIcons: Record<string, React.ReactNode> = {
-  lite: <Check className="h-3.5 w-3.5 text-green-500" />,
-  standard: <DollarSign className="h-3.5 w-3.5 text-sky-400" />,
-  premium: <Crown className="h-3.5 w-3.5 text-yellow-400" />,
+  lite: <Check className="h-3.5 w-3.5 text-success" />,
+  standard: <DollarSign className="h-3.5 w-3.5 text-primary" />,
+  premium: <Crown className="h-3.5 w-3.5 text-accent" />,
 };
 
 const tierBorderColors: Record<string, string> = {
-  lite: "border-l-green-500",
-  standard: "border-l-sky-500",
-  premium: "border-l-purple-500",
+  lite: "border-l-success",
+  standard: "border-l-primary",
+  premium: "border-l-accent",
 };
 
 const loadingSteps = [
@@ -235,7 +235,7 @@ const Analyze = () => {
                           value={t.id}
                           className={`border-l-[3px] ${
                             isSelected
-                              ? `${tierBorderColors[t.id] || ""} text-foreground`
+                              ? `${tierBorderColors[t.id] || ""} bg-secondary text-foreground`
                               : "border-l-transparent text-muted-foreground"
                           }`}
                         >
