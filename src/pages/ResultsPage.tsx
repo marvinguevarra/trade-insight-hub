@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
+import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import jsPDF from "jspdf";
 
 const verdictColors: Record<string, string> = {
   STRONG_BULL: "bg-bull/20 text-bull border-bull/30",
@@ -54,6 +56,104 @@ const ResultsPage = () => {
   const isHistorical = location.state?.isHistorical || false;
   const analysisDate = location.state?.analysisDate;
   const bb = useBullBearColors();
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const symbol = result?.metadata?.symbol || "Analysis";
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${symbol} Stock Analysis`,
+          text: `Check out this AI analysis for ${symbol}`,
+          url: window.location.href,
+        });
+        return;
+      } catch (err: any) {
+        if (err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({ title: "Link Copied!", description: "Share link copied to clipboard" });
+    } catch {
+      toast({ variant: "destructive", title: "Share Failed", description: "Unable to copy link" });
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    const symbol = metadata?.symbol || "UNKNOWN";
+    let y = 20;
+
+    doc.setFontSize(20);
+    doc.text(`${symbol} Stock Analysis`, 20, y);
+    y += 12;
+    doc.setFontSize(11);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, y);
+    y += 7;
+    doc.text(`Tier: ${metadata?.tier || "standard"}`, 20, y);
+    y += 7;
+    if (technical?.current_price) {
+      doc.text(`Price: $${technical.current_price}`, 20, y);
+      y += 7;
+    }
+    if (synthesis?.verdict) {
+      doc.text(`Verdict: ${synthesis.verdict}`, 20, y);
+      y += 12;
+    }
+
+    // Technical summary
+    if (technical?.support_resistance) {
+      doc.setFontSize(14);
+      doc.text("Support / Resistance", 20, y);
+      y += 8;
+      doc.setFontSize(10);
+      const sLevels = (technical.support_resistance.support_levels || []).slice(0, 5);
+      const rLevels = (technical.support_resistance.resistance_levels || []).slice(0, 5);
+      if (sLevels.length) {
+        doc.text(`Support: ${sLevels.map((l: any) => "$" + (typeof l === "number" ? l.toFixed(2) : l.price?.toFixed(2))).join(", ")}`, 20, y);
+        y += 6;
+      }
+      if (rLevels.length) {
+        doc.text(`Resistance: ${rLevels.map((l: any) => "$" + (typeof l === "number" ? l.toFixed(2) : l.price?.toFixed(2))).join(", ")}`, 20, y);
+        y += 10;
+      }
+    }
+
+    // News headlines
+    if (news?.headlines?.length) {
+      doc.setFontSize(14);
+      doc.text("Recent News", 20, y);
+      y += 8;
+      doc.setFontSize(10);
+      news.headlines.slice(0, 10).forEach((h: any) => {
+        const title = typeof h === "string" ? h : h.title || h.headline || "";
+        const lines = doc.splitTextToSize(title, 170);
+        if (y + lines.length * 5 > 280) { doc.addPage(); y = 20; }
+        doc.text(lines, 20, y);
+        y += lines.length * 5 + 3;
+      });
+      y += 5;
+    }
+
+    // Synthesis reasoning
+    if (synthesis?.reasoning) {
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(14);
+      doc.text("AI Synthesis", 20, y);
+      y += 8;
+      doc.setFontSize(10);
+      const rLines = doc.splitTextToSize(synthesis.reasoning, 170);
+      rLines.forEach((line: string) => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.text(line, 20, y);
+        y += 5;
+      });
+    }
+
+    doc.save(`${symbol}_analysis_${Date.now()}.pdf`);
+    toast({ title: "PDF Downloaded", description: `${symbol} analysis report saved` });
+  };
 
   // Pagination states
   const supportPag = usePagination(result?.technical?.support_resistance?.support_levels || [], 5);
@@ -107,6 +207,9 @@ const ResultsPage = () => {
               )}
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="text-xs" aria-label="Download analysis as PDF" onClick={handleDownloadPDF}>
+                <FileText className="mr-1 h-3 w-3" aria-hidden="true" /> PDF
+              </Button>
               <Button variant="outline" size="sm" className="text-xs" aria-label="Download analysis as JSON" onClick={() => {
                 const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
@@ -115,7 +218,7 @@ const ResultsPage = () => {
               }}>
                 <Download className="mr-1 h-3 w-3" aria-hidden="true" /> JSON
               </Button>
-              <Button variant="outline" size="sm" className="text-xs" aria-label="Share analysis results">
+              <Button variant="outline" size="sm" className="text-xs" aria-label="Share analysis results" onClick={handleShare}>
                 <Share2 className="mr-1 h-3 w-3" aria-hidden="true" /> Share
               </Button>
             </div>
@@ -152,11 +255,11 @@ const ResultsPage = () => {
         )}
         {/* Tabs */}
         <Tabs defaultValue="technical" className="mt-0">
-          <TabsList className="bg-card border border-border">
-            <TabsTrigger value="technical" className="text-xs uppercase tracking-wider">Technical</TabsTrigger>
-            <TabsTrigger value="news" className="text-xs uppercase tracking-wider">News</TabsTrigger>
-            <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider">Fundamental</TabsTrigger>
-            <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider">Synthesis</TabsTrigger>
+          <TabsList className="bg-card border border-border w-full md:w-auto overflow-x-auto">
+            <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
+            <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
+            <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
+            <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
           </TabsList>
 
           {/* === TECHNICAL === */}
@@ -402,11 +505,33 @@ const ResultsPage = () => {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      {news.headlines.map((h: any, i: number) => (
-                        <div key={i} className="border border-border p-3 text-xs text-foreground">
-                          {typeof h === "string" ? h : h.title || h.headline || JSON.stringify(h)}
-                        </div>
-                      ))}
+                      {news.headlines.map((h: any, i: number) => {
+                        const title = typeof h === "string" ? h : h.title || h.headline || JSON.stringify(h);
+                        const url = typeof h === "object" ? h.url || h.link : null;
+                        const source = typeof h === "object" ? h.source || h.publisher : null;
+                        const publishedAt = typeof h === "object" ? h.publishedAt || h.published_at || h.date : null;
+                        return (
+                          <div key={i} className="border border-border p-3 space-y-1">
+                            {url ? (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-medium text-primary hover:underline"
+                              >
+                                {title}
+                              </a>
+                            ) : (
+                              <p className="text-xs font-medium text-foreground">{title}</p>
+                            )}
+                            {(source || publishedAt) && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {source}{source && publishedAt ? " • " : ""}{publishedAt}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </CardContent>
                   </Card>
                 )}

@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Upload, FileText, X } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useTiers } from "@/lib/tierConfig";
@@ -30,6 +31,7 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = f
   const inputRef = useRef<HTMLInputElement>(null);
   const { tiers } = useTiers();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -94,8 +96,8 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = f
           onDrop={handleDrop}
         >
           <Upload className="mb-3 h-12 w-12 text-muted-foreground" />
-          <p className="text-sm text-foreground">Drag & Drop CSV File</p>
-          <p className="text-[10px] text-muted-foreground">or click to browse</p>
+          <p className="text-sm text-foreground">{isMobile ? "Tap to Upload CSV" : "Drag & Drop CSV File"}</p>
+          <p className="text-[10px] text-muted-foreground">{isMobile ? "Select a .csv file" : "or click to browse"}</p>
           <input
             ref={inputRef}
             type="file"

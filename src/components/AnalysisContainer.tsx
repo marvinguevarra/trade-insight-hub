@@ -167,7 +167,7 @@ const AnalysisContainer = () => {
           <CardContent className="py-8 space-y-4">
             <div className="flex items-center gap-3">
               <Loader2 className="h-5 w-5 text-primary animate-spin" />
-              <span className="text-sm font-mono text-foreground">
+              <span className="text-sm font-mono text-foreground" aria-live="polite">
                 {loadingSteps[currentStep].label}
               </span>
             </div>

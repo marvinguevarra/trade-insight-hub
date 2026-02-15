@@ -45,7 +45,7 @@ const QuickAnalysisForm = ({
   const { tiers } = useTiers();
 
   const handleTickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 5);
+    const value = e.target.value.replace(/[^A-Za-z0-9.]/g, "").toUpperCase().slice(0, 6);
     onTickerChange(value);
   };
 
@@ -53,14 +53,15 @@ const QuickAnalysisForm = ({
     <div className="space-y-4">
       {/* Ticker */}
       <div>
-        <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+        <label htmlFor="ticker-input" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
           Stock Ticker
         </label>
-        <Input
-          placeholder="e.g. AAPL"
+         <Input
+          id="ticker-input"
+          placeholder="e.g. AAPL, BRK.A"
           value={ticker}
           onChange={handleTickerChange}
-          maxLength={5}
+          maxLength={6}
           className="bg-card text-foreground"
           disabled={disabled}
           required
