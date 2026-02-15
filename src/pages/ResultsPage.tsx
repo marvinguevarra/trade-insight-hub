@@ -1,20 +1,40 @@
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { mockResult } from "@/types/analysis";
+
+const verdictColors: Record<string, string> = {
+  STRONG_BULL: "bg-green-500/20 text-green-400 border-green-500/30",
+  MODERATE_BULL: "bg-green-500/10 text-green-300 border-green-500/20",
+  NEUTRAL: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
+  MODERATE_BEAR: "bg-red-500/10 text-red-300 border-red-500/20",
+  STRONG_BEAR: "bg-red-500/20 text-red-400 border-red-500/30",
+};
 
 const ResultsPage = () => {
-  const { id } = useParams();
   const location = useLocation();
-  const symbol = location.state?.symbol || "DEMO";
-  const tier = location.state?.tier || "standard";
-  const result = mockResult;
+  const result = location.state?.result;
+
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-32 text-center">
+          <p className="text-muted-foreground">No analysis data found.</p>
+          <Button asChild variant="outline" className="mt-4">
+            <Link to="/analyze">Run an Analysis</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { metadata, technical, news, fundamental, synthesis, cost_summary } = result;
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,19 +43,21 @@ const ResultsPage = () => {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-foreground">{symbol}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{metadata?.symbol || "—"}</h1>
             <Badge variant="outline" className="border-primary/30 text-primary text-[10px] uppercase">
-              {tier}
+              {metadata?.tier || "standard"}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {result.date_range.start} — {result.date_range.end}
-            </span>
+            {metadata?.timeframe && (
+              <span className="text-xs text-muted-foreground">{metadata.timeframe} • {metadata.bars} bars</span>
+            )}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="text-xs">
-              <Download className="mr-1 h-3 w-3" /> PDF
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => {
+              const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url; a.download = `${metadata?.symbol || "analysis"}.json`; a.click();
+            }}>
               <Download className="mr-1 h-3 w-3" /> JSON
             </Button>
             <Button variant="outline" size="sm" className="text-xs">
@@ -44,166 +66,339 @@ const ResultsPage = () => {
           </div>
         </div>
 
-        {/* Price banner */}
-        <div className="mt-4 flex gap-6 text-sm">
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Price</span>
-            <p className="text-lg font-bold text-foreground">${result.current_price}</p>
-          </div>
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Timeframe</span>
-            <p className="text-lg font-bold text-foreground">{result.timeframe}</p>
-          </div>
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Est. Cost</span>
-            <p className="text-lg font-bold text-primary">$2.40</p>
-          </div>
+        {/* Price + Cost banner */}
+        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+          {technical?.current_price && (
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Price</span>
+              <p className="text-lg font-bold text-foreground">${technical.current_price}</p>
+            </div>
+          )}
+          {cost_summary && (
+            <>
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Cost</span>
+                <p className="text-lg font-bold text-primary">${cost_summary.total_cost?.toFixed(3)}</p>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Time</span>
+                <p className="text-lg font-bold text-foreground">{(cost_summary.execution_time_ms / 1000).toFixed(1)}s</p>
+              </div>
+            </>
+          )}
+          {synthesis?.verdict && (
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Verdict</span>
+              <p className={`mt-1 inline-block border px-2 py-0.5 text-xs font-bold ${verdictColors[synthesis.verdict] || "text-foreground"}`}>
+                {synthesis.verdict}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="technical" className="mt-8">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="technical" className="text-xs uppercase tracking-wider">Technical</TabsTrigger>
+            <TabsTrigger value="news" className="text-xs uppercase tracking-wider">News</TabsTrigger>
             <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider">Fundamental</TabsTrigger>
             <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider">Synthesis</TabsTrigger>
           </TabsList>
 
+          {/* === TECHNICAL === */}
           <TabsContent value="technical" className="mt-6 space-y-6">
             {/* Gaps */}
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs uppercase tracking-widest">Price Gaps</CardTitle>
-                  <Badge variant="secondary" className="text-[10px]">{result.gaps.length}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[10px] uppercase">Date</TableHead>
-                      <TableHead className="text-[10px] uppercase">Dir</TableHead>
-                      <TableHead className="text-[10px] uppercase">Size</TableHead>
-                      <TableHead className="text-[10px] uppercase">Type</TableHead>
-                      <TableHead className="text-[10px] uppercase">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {result.gaps.map((g, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="text-xs">{g.date}</TableCell>
-                        <TableCell>{g.direction === "up" ? "⬆️" : "⬇️"}</TableCell>
-                        <TableCell className={`text-xs ${g.direction === "up" ? "text-success" : "text-destructive"}`}>
-                          {g.size_percent}%
-                        </TableCell>
-                        <TableCell className="text-xs">{g.type}</TableCell>
-                        <TableCell>{g.filled ? "✅" : "❌"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            {technical?.gaps && (
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-xs uppercase tracking-widest">Price Gaps</CardTitle>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {technical.gaps.total} total • {technical.gaps.unfilled} unfilled
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {technical.gaps.details?.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-[10px] uppercase">Date</TableHead>
+                          <TableHead className="text-[10px] uppercase">Direction</TableHead>
+                          <TableHead className="text-[10px] uppercase">Size</TableHead>
+                          <TableHead className="text-[10px] uppercase">Type</TableHead>
+                          <TableHead className="text-[10px] uppercase">Filled</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {technical.gaps.details.map((g: any, i: number) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-xs">{g.date || g.gap_date || "—"}</TableCell>
+                            <TableCell>
+                              {g.direction === "up" ? <TrendingUp className="h-4 w-4 text-green-400" /> : <TrendingDown className="h-4 w-4 text-red-400" />}
+                            </TableCell>
+                            <TableCell className={`text-xs font-mono ${g.direction === "up" ? "text-green-400" : "text-red-400"}`}>
+                              {g.size_percent?.toFixed(1) || g.gap_pct?.toFixed(1)}%
+                            </TableCell>
+                            <TableCell className="text-xs">{g.type || "—"}</TableCell>
+                            <TableCell className="text-xs">{g.filled ? "✓ Filled" : "Open"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No gaps detected with current threshold.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* S/R Levels */}
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <CardTitle className="text-xs uppercase tracking-widest">Key Levels</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[10px] uppercase">Price</TableHead>
-                      <TableHead className="text-[10px] uppercase">Type</TableHead>
-                      <TableHead className="text-[10px] uppercase">Strength</TableHead>
-                      <TableHead className="text-[10px] uppercase">Distance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {result.levels.map((l, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="text-xs font-bold">${l.price.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge variant={l.type === "support" ? "default" : "destructive"} className="text-[10px]">
-                            {l.type === "support" ? "🟢 Support" : "🔴 Resistance"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
+            {technical?.support_resistance && (
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Support */}
+                <Card className="border-border bg-card">
+                  <CardHeader>
+                    <CardTitle className="text-xs uppercase tracking-widest text-green-400">Support Levels</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {(technical.support_resistance.support_levels || []).map((level: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between border border-border p-2">
+                        <span className="text-sm font-bold text-foreground">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
+                        {level.strength != null && (
                           <div className="flex items-center gap-2">
-                            <Progress value={l.strength} className="h-1 w-16" />
-                            <span className="text-[10px] text-muted-foreground">{l.strength}</span>
+                            <Progress value={level.strength} className="h-1 w-12" />
+                            <span className="text-[10px] text-muted-foreground">{level.strength}</span>
                           </div>
-                        </TableCell>
-                        <TableCell className={`text-xs ${l.distance_percent < 0 ? "text-destructive" : "text-success"}`}>
-                          {l.distance_percent > 0 ? "+" : ""}{l.distance_percent}%
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Zones */}
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs uppercase tracking-widest">Supply/Demand Zones</CardTitle>
-                  <Badge variant="secondary" className="text-[10px]">
-                    {result.zones.filter((z) => z.fresh).length} fresh
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {result.zones.map((z, i) => (
-                  <div key={i} className="flex items-center justify-between border border-border p-3">
-                    <div className="flex items-center gap-3">
-                      {z.fresh && <span>⭐</span>}
-                      <Badge variant={z.type === "demand" ? "default" : "destructive"} className="text-[10px]">
-                        {z.type.toUpperCase()}
-                      </Badge>
-                      <span className="text-xs text-foreground">
-                        ${z.range_low} — ${z.range_high}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-[10px] text-muted-foreground">{z.pattern}</span>
-                      <div className="flex items-center gap-1">
-                        <Progress value={z.strength} className="h-1 w-12" />
-                        <span className="text-[10px] text-muted-foreground">{z.strength}</span>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                    ))}
+                    {(!technical.support_resistance.support_levels?.length) && (
+                      <p className="text-xs text-muted-foreground">No support levels found.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Resistance */}
+                <Card className="border-border bg-card">
+                  <CardHeader>
+                    <CardTitle className="text-xs uppercase tracking-widest text-red-400">Resistance Levels</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {(technical.support_resistance.resistance_levels || []).map((level: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between border border-border p-2">
+                        <span className="text-sm font-bold text-foreground">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
+                        {level.strength != null && (
+                          <div className="flex items-center gap-2">
+                            <Progress value={level.strength} className="h-1 w-12" />
+                            <span className="text-[10px] text-muted-foreground">{level.strength}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {(!technical.support_resistance.resistance_levels?.length) && (
+                      <p className="text-xs text-muted-foreground">No resistance levels found.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="fundamental" className="mt-6">
-            <Card className="border-border bg-card">
-              <CardContent className="flex flex-col items-center py-16 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Fundamental analysis will be available when connected to the backend.
-                </p>
-                <p className="mt-1 text-[10px] text-muted-foreground">
-                  Includes: News summary, SEC filings, sentiment scoring
-                </p>
-              </CardContent>
-            </Card>
+          {/* === NEWS === */}
+          <TabsContent value="news" className="mt-6 space-y-6">
+            {news ? (
+              <>
+                {/* Sentiment */}
+                {news.sentiment_score != null && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <CardTitle className="text-xs uppercase tracking-widest">Sentiment Score</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4">
+                        <span className="text-3xl font-bold text-foreground">{news.sentiment_score}</span>
+                        <span className="text-xs text-muted-foreground">/ 10</span>
+                        <Progress value={news.sentiment_score * 10} className="h-2 flex-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Headlines */}
+                {news.headlines?.length > 0 && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Newspaper className="h-4 w-4 text-primary" />
+                        <CardTitle className="text-xs uppercase tracking-widest">Headlines</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {news.headlines.map((h: any, i: number) => (
+                        <div key={i} className="border border-border p-3 text-xs text-foreground">
+                          {typeof h === "string" ? h : h.title || h.headline || JSON.stringify(h)}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Catalysts + Themes */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {news.catalysts?.length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Catalysts</CardTitle></CardHeader>
+                      <CardContent className="space-y-1">
+                        {news.catalysts.map((c: string, i: number) => (
+                          <p key={i} className="text-xs text-foreground">• {c}</p>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                  {news.themes?.length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Themes</CardTitle></CardHeader>
+                      <CardContent className="flex flex-wrap gap-2">
+                        {news.themes.map((t: string, i: number) => (
+                          <Badge key={i} variant="secondary" className="text-[10px]">{t}</Badge>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </>
+            ) : (
+              <Card className="border-border bg-card">
+                <CardContent className="py-16 text-center">
+                  <p className="text-sm text-muted-foreground">No news data available for this tier.</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          <TabsContent value="synthesis" className="mt-6">
-            <Card className="border-border bg-card">
-              <CardContent className="flex flex-col items-center py-16 text-center">
-                <p className="text-sm text-muted-foreground">
-                  AI synthesis (Bull/Bear cases) coming soon.
-                </p>
-                <p className="mt-1 text-[10px] text-muted-foreground">
-                  Powered by multi-model reasoning with Claude
-                </p>
-              </CardContent>
-            </Card>
+          {/* === FUNDAMENTAL === */}
+          <TabsContent value="fundamental" className="mt-6 space-y-6">
+            {fundamental ? (
+              <>
+                {fundamental.financial_health && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-primary" />
+                        <CardTitle className="text-xs uppercase tracking-widest">Financial Health</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
+                        {typeof fundamental.financial_health === "string"
+                          ? fundamental.financial_health
+                          : JSON.stringify(fundamental.financial_health, null, 2)}
+                      </pre>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {fundamental.key_risks?.length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-red-400">Key Risks</CardTitle></CardHeader>
+                      <CardContent className="space-y-1">
+                        {fundamental.key_risks.map((r: string, i: number) => (
+                          <p key={i} className="text-xs text-foreground">⚠ {r}</p>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                  {fundamental.opportunities?.length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-green-400">Opportunities</CardTitle></CardHeader>
+                      <CardContent className="space-y-1">
+                        {fundamental.opportunities.map((o: string, i: number) => (
+                          <p key={i} className="text-xs text-foreground">✦ {o}</p>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </>
+            ) : (
+              <Card className="border-border bg-card">
+                <CardContent className="py-16 text-center">
+                  <p className="text-sm text-muted-foreground">No fundamental data available for this tier.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* === SYNTHESIS === */}
+          <TabsContent value="synthesis" className="mt-6 space-y-6">
+            {synthesis ? (
+              <>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Bull case */}
+                  {synthesis.bull_case && (
+                    <Card className="border-green-500/20 bg-card">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-green-400" />
+                          <CardTitle className="text-xs uppercase tracking-widest text-green-400">Bull Case</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
+                          {typeof synthesis.bull_case === "string"
+                            ? synthesis.bull_case
+                            : JSON.stringify(synthesis.bull_case, null, 2)}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Bear case */}
+                  {synthesis.bear_case && (
+                    <Card className="border-red-500/20 bg-card">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="h-4 w-4 text-red-400" />
+                          <CardTitle className="text-xs uppercase tracking-widest text-red-400">Bear Case</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
+                          {typeof synthesis.bear_case === "string"
+                            ? synthesis.bear_case
+                            : JSON.stringify(synthesis.bear_case, null, 2)}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Reasoning */}
+                {synthesis.reasoning && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Brain className="h-4 w-4 text-primary" />
+                        <CardTitle className="text-xs uppercase tracking-widest">AI Reasoning</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                        {synthesis.reasoning}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card className="border-border bg-card">
+                <CardContent className="py-16 text-center">
+                  <p className="text-sm text-muted-foreground">No synthesis available for this tier.</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 
