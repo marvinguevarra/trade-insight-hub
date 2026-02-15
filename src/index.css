@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  /* ── Default: Dark theme ── */
+  :root,
+  .theme-dark {
     --background: 230 60% 10%;
     --foreground: 214 32% 91%;
 
@@ -20,7 +22,7 @@
     --secondary-foreground: 214 32% 91%;
 
     --muted: 215 33% 17%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 20% 65%;
 
     --accent: 199 89% 48%;
     --accent-foreground: 230 60% 10%;
@@ -40,7 +42,7 @@
     --terminal-bg: 230 60% 10%;
     --terminal-border: 215 33% 17%;
     --terminal-text: 214 32% 91%;
-    --terminal-muted: 215 16% 47%;
+    --terminal-muted: 215 20% 65%;
     --terminal-accent: 199 89% 48%;
 
     --sidebar-background: 230 60% 10%;
@@ -52,6 +54,153 @@
     --sidebar-border: 215 33% 17%;
     --sidebar-ring: 199 89% 48%;
   }
+
+  /* ── Light theme ── */
+  .theme-light {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 199 89% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 40%;
+
+    --accent: 199 89% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 214 32% 85%;
+    --input: 214 32% 85%;
+    --ring: 199 89% 40%;
+
+    --terminal-bg: 210 40% 98%;
+    --terminal-border: 214 32% 85%;
+    --terminal-text: 222 47% 11%;
+    --terminal-muted: 215 16% 40%;
+    --terminal-accent: 199 89% 40%;
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 199 89% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 85%;
+    --sidebar-ring: 199 89% 40%;
+  }
+
+  /* ── High Contrast Dark ── */
+  .theme-hc-dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 55 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 80%;
+
+    --accent: 55 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 100% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 100% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --ring: 55 100% 50%;
+
+    --terminal-bg: 0 0% 0%;
+    --terminal-border: 0 0% 30%;
+    --terminal-text: 0 0% 100%;
+    --terminal-muted: 0 0% 80%;
+    --terminal-accent: 55 100% 50%;
+
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 55 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 30%;
+    --sidebar-ring: 55 100% 50%;
+  }
+
+  /* ── High Contrast Light ── */
+  .theme-hc-light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 97%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 220 90% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 25%;
+
+    --accent: 220 90% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 80% 30%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 220 90% 40%;
+
+    --terminal-bg: 0 0% 100%;
+    --terminal-border: 0 0% 0%;
+    --terminal-text: 0 0% 0%;
+    --terminal-muted: 0 0% 25%;
+    --terminal-accent: 220 90% 40%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 220 90% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 92%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 220 90% 40%;
+  }
 }
 
 @layer base {
@@ -62,5 +211,56 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+  }
+
+  /* ── Focus indicators ── */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  .enhanced-focus *:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px hsl(var(--ring) / 0.2);
+  }
+
+  /* ── Reduced motion ── */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ── Text scaling ── */
+  .text-size-small { font-size: 87.5%; }
+  .text-size-normal { font-size: 100%; }
+  .text-size-large { font-size: 112.5%; }
+  .text-size-xl { font-size: 125%; }
+
+  /* ── Colorblind modes ── */
+  .cv-protanopia {
+    --success: 210 80% 50%;
+    --destructive: 40 95% 55%;
+  }
+  .cv-deuteranopia {
+    --success: 210 80% 50%;
+    --destructive: 30 95% 55%;
+  }
+  .cv-tritanopia {
+    --success: 0 70% 55%;
+    --destructive: 180 70% 40%;
   }
 }
