@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import Navbar from "@/components/Navbar";
 
 const verdictColors: Record<string, string> = {
@@ -16,9 +18,55 @@ const verdictColors: Record<string, string> = {
   STRONG_BEAR: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
+// Pagination hook
+function usePagination<T>(items: T[], perPage: number) {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  const paged = items.slice(page * perPage, (page + 1) * perPage);
+  return { paged, page, totalPages, setPage, hasMultiple: totalPages > 1 };
+}
+
+const PaginationControls = ({ page, totalPages, setPage }: { page: number; totalPages: number; setPage: (p: number) => void }) => (
+  <div className="flex items-center justify-end gap-2 pt-3 border-t border-border mt-3">
+    <Button variant="ghost" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)} className="h-7 w-7 p-0">
+      <ChevronLeft className="h-3.5 w-3.5" />
+    </Button>
+    {Array.from({ length: totalPages }, (_, i) => (
+      <button
+        key={i}
+        onClick={() => setPage(i)}
+        className={`h-7 w-7 text-[10px] font-mono transition-colors ${i === page ? "bg-primary/20 text-primary border border-primary/30" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        {i + 1}
+      </button>
+    ))}
+    <Button variant="ghost" size="sm" disabled={page === totalPages - 1} onClick={() => setPage(page + 1)} className="h-7 w-7 p-0">
+      <ChevronRight className="h-3.5 w-3.5" />
+    </Button>
+  </div>
+);
+
 const ResultsPage = () => {
   const location = useLocation();
   const result = location.state?.result;
+
+  // Pagination states
+  const supportPag = usePagination(result?.technical?.support_resistance?.support_levels || [], 5);
+  const resistPag = usePagination(result?.technical?.support_resistance?.resistance_levels || [], 5);
+  const demandPag = usePagination(
+    [...(result?.technical?.supply_demand?.demand_zones || [])].sort((a: any, b: any) => {
+      const cp = result?.technical?.current_price || 0;
+      return Math.abs(a.midpoint - cp) - Math.abs(b.midpoint - cp);
+    }),
+    3
+  );
+  const supplyPag = usePagination(
+    [...(result?.technical?.supply_demand?.supply_zones || [])].sort((a: any, b: any) => {
+      const cp = result?.technical?.current_price || 0;
+      return Math.abs(a.midpoint - cp) - Math.abs(b.midpoint - cp);
+    }),
+    3
+  );
 
   if (!result) {
     return (
@@ -48,7 +96,7 @@ const ResultsPage = () => {
               {metadata?.tier || "standard"}
             </Badge>
             {metadata?.timeframe && (
-              <span className="text-xs text-muted-foreground">{metadata.timeframe} • {metadata.bars} bars</span>
+              <span className="text-xs text-muted-foreground">{metadata.timeframe} &middot; {metadata.bars} bars</span>
             )}
           </div>
           <div className="flex gap-2">
@@ -114,7 +162,7 @@ const ResultsPage = () => {
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-xs uppercase tracking-widest">Price Gaps</CardTitle>
                     <Badge variant="secondary" className="text-[10px]">
-                      {technical.gaps.total} total • {technical.gaps.unfilled} unfilled
+                      {technical.gaps.total} total &middot; {technical.gaps.unfilled} unfilled
                     </Badge>
                   </div>
                 </CardHeader>
@@ -127,7 +175,7 @@ const ResultsPage = () => {
                           <TableHead className="text-[10px] uppercase">Direction</TableHead>
                           <TableHead className="text-[10px] uppercase">Size</TableHead>
                           <TableHead className="text-[10px] uppercase">Type</TableHead>
-                          <TableHead className="text-[10px] uppercase">Filled</TableHead>
+                          <TableHead className="text-[10px] uppercase">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -135,13 +183,13 @@ const ResultsPage = () => {
                           <TableRow key={i}>
                             <TableCell className="text-xs">{g.date || g.gap_date || "—"}</TableCell>
                             <TableCell>
-                              {g.direction === "up" ? <TrendingUp className="h-4 w-4 text-green-400" /> : <TrendingDown className="h-4 w-4 text-red-400" />}
+                              <DirectionBadge direction={g.direction} />
                             </TableCell>
                             <TableCell className={`text-xs font-mono ${g.direction === "up" ? "text-green-400" : "text-red-400"}`}>
                               {g.size_percent?.toFixed(1) || g.gap_pct?.toFixed(1)}%
                             </TableCell>
                             <TableCell className="text-xs">{g.type || "—"}</TableCell>
-                            <TableCell className="text-xs">{g.filled ? "✓ Filled" : "Open"}</TableCell>
+                            <TableCell>{g.filled ? <FilledIcon /> : <UnfilledIcon />}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -153,62 +201,72 @@ const ResultsPage = () => {
               </Card>
             )}
 
-            {/* S/R Levels */}
+            {/* S/R Levels - equal height grid */}
             {technical?.support_resistance && (
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2 items-stretch">
                 {/* Support */}
-                <Card className="border-border bg-card">
+                <Card className="border-border bg-card flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-xs uppercase tracking-widest text-green-400">Support Levels</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {(technical.support_resistance.support_levels || []).map((level: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between border border-border p-2">
-                        <span className="text-sm font-bold text-foreground">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
-                        {level.strength != null && (
-                          <div className="flex items-center gap-2">
-                            <Progress value={level.strength} className="h-1 w-12" />
-                            <span className="text-[10px] text-muted-foreground">{level.strength}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {(!technical.support_resistance.support_levels?.length) && (
-                      <p className="text-xs text-muted-foreground">No support levels found.</p>
+                  <CardContent className="flex-1 flex flex-col">
+                    <div className="space-y-2 flex-1">
+                      {supportPag.paged.map((level: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between border border-border p-2 border-l-4 border-l-green-500/40">
+                          <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
+                          {level.strength != null && (
+                            <div className="flex items-center gap-2">
+                              <Progress value={level.strength} className="h-1 w-12" />
+                              <span className="text-[10px] text-muted-foreground">{level.strength}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {(!technical.support_resistance.support_levels?.length) && (
+                        <p className="text-xs text-muted-foreground">No support levels found.</p>
+                      )}
+                    </div>
+                    {supportPag.hasMultiple && (
+                      <PaginationControls page={supportPag.page} totalPages={supportPag.totalPages} setPage={supportPag.setPage} />
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Resistance */}
-                <Card className="border-border bg-card">
+                <Card className="border-border bg-card flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-xs uppercase tracking-widest text-red-400">Resistance Levels</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {(technical.support_resistance.resistance_levels || []).map((level: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between border border-border p-2">
-                        <span className="text-sm font-bold text-foreground">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
-                        {level.strength != null && (
-                          <div className="flex items-center gap-2">
-                            <Progress value={level.strength} className="h-1 w-12" />
-                            <span className="text-[10px] text-muted-foreground">{level.strength}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {(!technical.support_resistance.resistance_levels?.length) && (
-                      <p className="text-xs text-muted-foreground">No resistance levels found.</p>
+                  <CardContent className="flex-1 flex flex-col">
+                    <div className="space-y-2 flex-1">
+                      {resistPag.paged.map((level: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between border border-border p-2 border-l-4 border-l-red-500/40">
+                          <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
+                          {level.strength != null && (
+                            <div className="flex items-center gap-2">
+                              <Progress value={level.strength} className="h-1 w-12" />
+                              <span className="text-[10px] text-muted-foreground">{level.strength}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {(!technical.support_resistance.resistance_levels?.length) && (
+                        <p className="text-xs text-muted-foreground">No resistance levels found.</p>
+                      )}
+                    </div>
+                    {resistPag.hasMultiple && (
+                      <PaginationControls page={resistPag.page} totalPages={resistPag.totalPages} setPage={resistPag.setPage} />
                     )}
                   </CardContent>
                 </Card>
               </div>
             )}
 
-            {/* Supply/Demand Zones */}
+            {/* Supply/Demand Zones - equal height grid */}
             {technical?.supply_demand && (
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2 items-stretch">
                 {/* Demand Zones */}
-                <Card className="border-green-500/20 bg-card">
+                <Card className="border-green-500/20 bg-card flex flex-col">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -221,24 +279,18 @@ const ResultsPage = () => {
                     </div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Buy Areas</p>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {(technical.supply_demand.demand_zones || [])
-                      .sort((a: any, b: any) => {
-                        const currentPrice = technical.current_price || 0;
-                        return Math.abs(a.midpoint - currentPrice) - Math.abs(b.midpoint - currentPrice);
-                      })
-                      .map((zone: any, i: number) => {
+                  <CardContent className="flex-1 flex flex-col">
+                    <div className="space-y-2 flex-1">
+                      {demandPag.paged.map((zone: any, i: number) => {
                         const currentPrice = technical.current_price || 0;
                         const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
                         return (
-                          <div key={i} className={`border p-3 transition-colors ${zone.fresh ? "border-green-500/30 bg-green-500/5" : "border-border bg-secondary/30"}`}>
+                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-green-500/50 ${zone.fresh ? "border-green-500/30 bg-green-500/5" : "border-border bg-secondary/30"}`}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
                               </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {zone.fresh ? "🟢 Fresh" : "⚪ Tested"}
-                              </span>
+                              {zone.fresh ? <FreshDot /> : <TestedDot />}
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
@@ -253,14 +305,18 @@ const ResultsPage = () => {
                           </div>
                         );
                       })}
-                    {(!technical.supply_demand.demand_zones?.length) && (
-                      <p className="text-xs text-muted-foreground">No significant demand zones detected.</p>
+                      {(!technical.supply_demand.demand_zones?.length) && (
+                        <p className="text-xs text-muted-foreground">No significant demand zones detected.</p>
+                      )}
+                    </div>
+                    {demandPag.hasMultiple && (
+                      <PaginationControls page={demandPag.page} totalPages={demandPag.totalPages} setPage={demandPag.setPage} />
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Supply Zones */}
-                <Card className="border-red-500/20 bg-card">
+                <Card className="border-red-500/20 bg-card flex flex-col">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -273,24 +329,18 @@ const ResultsPage = () => {
                     </div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Sell Areas</p>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {(technical.supply_demand.supply_zones || [])
-                      .sort((a: any, b: any) => {
-                        const currentPrice = technical.current_price || 0;
-                        return Math.abs(a.midpoint - currentPrice) - Math.abs(b.midpoint - currentPrice);
-                      })
-                      .map((zone: any, i: number) => {
+                  <CardContent className="flex-1 flex flex-col">
+                    <div className="space-y-2 flex-1">
+                      {supplyPag.paged.map((zone: any, i: number) => {
                         const currentPrice = technical.current_price || 0;
                         const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
                         return (
-                          <div key={i} className={`border p-3 transition-colors ${zone.fresh ? "border-red-500/30 bg-red-500/5" : "border-border bg-secondary/30"}`}>
+                          <div key={i} className={`border p-3 transition-colors border-l-4 border-l-red-500/50 ${zone.fresh ? "border-red-500/30 bg-red-500/5" : "border-border bg-secondary/30"}`}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
                               </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {zone.fresh ? "🟢 Fresh" : "⚪ Tested"}
-                              </span>
+                              {zone.fresh ? <FreshDot /> : <TestedDot />}
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
@@ -305,8 +355,12 @@ const ResultsPage = () => {
                           </div>
                         );
                       })}
-                    {(!technical.supply_demand.supply_zones?.length) && (
-                      <p className="text-xs text-muted-foreground">No significant supply zones detected.</p>
+                      {(!technical.supply_demand.supply_zones?.length) && (
+                        <p className="text-xs text-muted-foreground">No significant supply zones detected.</p>
+                      )}
+                    </div>
+                    {supplyPag.hasMultiple && (
+                      <PaginationControls page={supplyPag.page} totalPages={supplyPag.totalPages} setPage={supplyPag.setPage} />
                     )}
                   </CardContent>
                 </Card>
@@ -318,7 +372,6 @@ const ResultsPage = () => {
           <TabsContent value="news" className="mt-6 space-y-6">
             {news ? (
               <>
-                {/* Sentiment */}
                 {news.sentiment_score != null && (
                   <Card className="border-border bg-card">
                     <CardHeader>
@@ -334,7 +387,6 @@ const ResultsPage = () => {
                   </Card>
                 )}
 
-                {/* Headlines */}
                 {news.headlines?.length > 0 && (
                   <Card className="border-border bg-card">
                     <CardHeader>
@@ -353,14 +405,16 @@ const ResultsPage = () => {
                   </Card>
                 )}
 
-                {/* Catalysts + Themes */}
                 <div className="grid gap-6 md:grid-cols-2">
                   {news.catalysts?.length > 0 && (
                     <Card className="border-border bg-card">
                       <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Catalysts</CardTitle></CardHeader>
                       <CardContent className="space-y-1">
                         {news.catalysts.map((c: string, i: number) => (
-                          <p key={i} className="text-xs text-foreground">• {c}</p>
+                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                            {c}
+                          </p>
                         ))}
                       </CardContent>
                     </Card>
@@ -414,7 +468,10 @@ const ResultsPage = () => {
                       <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-red-400">Key Risks</CardTitle></CardHeader>
                       <CardContent className="space-y-1">
                         {fundamental.key_risks.map((r: string, i: number) => (
-                          <p key={i} className="text-xs text-foreground">⚠ {r}</p>
+                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                            <AlertTriangle className="h-3 w-3 text-red-400 shrink-0 mt-0.5" />
+                            {r}
+                          </p>
                         ))}
                       </CardContent>
                     </Card>
@@ -424,7 +481,10 @@ const ResultsPage = () => {
                       <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-green-400">Opportunities</CardTitle></CardHeader>
                       <CardContent className="space-y-1">
                         {fundamental.opportunities.map((o: string, i: number) => (
-                          <p key={i} className="text-xs text-foreground">✦ {o}</p>
+                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                            <Sparkles className="h-3 w-3 text-green-400 shrink-0 mt-0.5" />
+                            {o}
+                          </p>
                         ))}
                       </CardContent>
                     </Card>
@@ -445,7 +505,6 @@ const ResultsPage = () => {
             {synthesis ? (
               <>
                 <div className="grid gap-6 md:grid-cols-2">
-                  {/* Bull case */}
                   {synthesis.bull_case && (
                     <Card className="border-green-500/20 bg-card">
                       <CardHeader>
@@ -464,7 +523,6 @@ const ResultsPage = () => {
                     </Card>
                   )}
 
-                  {/* Bear case */}
                   {synthesis.bear_case && (
                     <Card className="border-red-500/20 bg-card">
                       <CardHeader>
@@ -484,7 +542,6 @@ const ResultsPage = () => {
                   )}
                 </div>
 
-                {/* Reasoning */}
                 {synthesis.reasoning && (
                   <Card className="border-border bg-card">
                     <CardHeader>
