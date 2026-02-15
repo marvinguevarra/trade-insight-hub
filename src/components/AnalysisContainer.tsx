@@ -47,7 +47,14 @@ const AnalysisContainer = () => {
     mode === "quick" ? ticker.trim().length > 0 : file !== null;
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (mode === "quick" && !ticker.trim()) {
+      toast({ variant: "destructive", title: "Error", description: "Please enter a ticker symbol" });
+      return;
+    }
+    if (mode === "advanced" && !file) {
+      toast({ variant: "destructive", title: "No File", description: "Please upload a CSV file" });
+      return;
+    }
     setLoading(true);
     setCurrentStep(0);
 
@@ -150,6 +157,7 @@ const AnalysisContainer = () => {
               onTimeframeChange={setTimeframe}
               tier={tier}
               onTierChange={setTier}
+              disabled={loading}
             />
           ) : (
             <AdvancedDataForm
@@ -157,6 +165,7 @@ const AnalysisContainer = () => {
               onFileChange={setFile}
               tier={tier}
               onTierChange={setTier}
+              disabled={loading}
             />
           )}
 
