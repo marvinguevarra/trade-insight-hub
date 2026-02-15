@@ -11,7 +11,7 @@ import QuickAnalysisForm from "@/components/QuickAnalysisForm";
 import AdvancedDataForm from "@/components/AdvancedDataForm";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://trading-analyzer-production-7513.up.railway.app";
-const API_TIMEOUT = 30000; // 30 seconds
+const API_TIMEOUT = 90000; // 90 seconds
 
 const loadingSteps = [
   { label: "PARSING DATA...", duration: 2000 },
