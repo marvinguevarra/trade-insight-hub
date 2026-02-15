@@ -31,18 +31,38 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = f
   const { tiers } = useTiers();
   const { toast } = useToast();
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  const validateFile = useCallback(
+    (f: File): boolean => {
+      if (!f.name.endsWith(".csv")) {
+        toast({ variant: "destructive", title: "Invalid File", description: "Please upload a CSV file (.csv)" });
+        return false;
+      }
+      if (f.size > MAX_FILE_SIZE) {
+        toast({ variant: "destructive", title: "File Too Large", description: `Max file size is 10MB. Your file is ${(f.size / (1024 * 1024)).toFixed(1)}MB.` });
+        return false;
+      }
+      return true;
+    },
+    [toast]
+  );
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-      const f = e.dataTransfer.files?.[0];
-      if (f?.name.endsWith(".csv")) {
+      const files = e.dataTransfer.files;
+      if (files.length > 1) {
+        toast({ variant: "destructive", title: "Multiple Files", description: "Only one file allowed. Please upload one CSV at a time." });
+        return;
+      }
+      const f = files[0];
+      if (f && validateFile(f)) {
         onFileChange(f);
-      } else {
-        toast({ variant: "destructive", title: "Invalid File", description: "Please upload a CSV file" });
       }
     },
-    [onFileChange, toast]
+    [onFileChange, toast, validateFile]
   );
 
   return (
@@ -82,7 +102,10 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = f
             accept=".csv"
             className="hidden"
             disabled={disabled}
-            onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f && validateFile(f)) onFileChange(f);
+            }}
           />
         </label>
       )}

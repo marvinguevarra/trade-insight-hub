@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, X } from "lucide-react";
 import { saveAnalysis } from "@/lib/analysisHistory";
 import AnalysisModePicker from "@/components/AnalysisModePicker";
 import QuickAnalysisForm from "@/components/QuickAnalysisForm";
 import AdvancedDataForm from "@/components/AdvancedDataForm";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_TIMEOUT = 30000; // 30 seconds
 
 const loadingSteps = [
   { label: "PARSING DATA...", duration: 2000 },
@@ -20,6 +21,22 @@ const loadingSteps = [
   { label: "GENERATING SYNTHESIS...", duration: 4000 },
 ];
 
+const friendlyErrors: Record<string, string> = {
+  "Ticker not found": "Unable to find that ticker. Please check the symbol and try again.",
+  "No data available": "This stock doesn't have enough historical data for analysis.",
+  "Rate limit": "Too many requests. Please wait a moment and try again.",
+  "Invalid CSV": "Unable to read CSV file. Please check the format.",
+  "KeyError": "Invalid data format in the uploaded file.",
+  "ParserError": "Unable to parse CSV. Please check the file format.",
+};
+
+const mapError = (msg: string): string => {
+  for (const [key, friendly] of Object.entries(friendlyErrors)) {
+    if (msg.includes(key)) return friendly;
+  }
+  return msg;
+};
+
 const AnalysisContainer = () => {
   const [mode, setMode] = useState<"quick" | "advanced">("quick");
   const [ticker, setTicker] = useState("");
@@ -28,8 +45,15 @@ const AnalysisContainer = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Debounce mode switching — disable toggle during loading
+  const handleModeChange = useCallback((newMode: "quick" | "advanced") => {
+    if (loading) return; // prevent switching during active request
+    setMode(newMode);
+  }, [loading]);
 
   useEffect(() => {
     if (!loading || currentStep >= loadingSteps.length - 1) return;
@@ -46,6 +70,16 @@ const AnalysisContainer = () => {
   const canSubmit =
     mode === "quick" ? ticker.trim().length > 0 : file !== null;
 
+  const handleCancel = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setLoading(false);
+    setCurrentStep(0);
+    toast({ title: "Cancelled", description: "Analysis request cancelled." });
+  }, [toast]);
+
   const handleSubmit = async () => {
     if (mode === "quick" && !ticker.trim()) {
       toast({ variant: "destructive", title: "Error", description: "Please enter a ticker symbol" });
@@ -57,6 +91,12 @@ const AnalysisContainer = () => {
     }
     setLoading(true);
     setCurrentStep(0);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // Timeout
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
     try {
       const formData = new FormData();
@@ -75,12 +115,18 @@ const AnalysisContainer = () => {
       const response = await fetch(`${API_URL}/analyze/full`, {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        if (response.status === 400) throw new Error("Invalid input. Please check your data.");
-        if (response.status === 422) throw new Error("Missing required fields.");
-        throw new Error("Analysis failed. Please try again.");
+        let errorMsg = "Analysis failed. Please try again.";
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errData.detail || errorMsg;
+        } catch {}
+        if (response.status === 400) errorMsg = mapError(errorMsg);
+        if (response.status === 422) errorMsg = "Missing required fields.";
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -94,9 +140,15 @@ const AnalysisContainer = () => {
       });
       navigate("/results/live", { state: { result: data } });
     } catch (err: any) {
-      const message = err.message || "Could not reach the backend.";
-      toast({ title: "Analysis failed", description: message, variant: "destructive" });
+      if (err.name === "AbortError") {
+        toast({ title: "Timed Out", description: "Analysis took too long. Please try again.", variant: "destructive" });
+      } else {
+        const message = mapError(err.message || "Could not reach the backend.");
+        toast({ title: "Analysis failed", description: message, variant: "destructive" });
+      }
     } finally {
+      clearTimeout(timeoutId);
+      abortRef.current = null;
       setLoading(false);
       setCurrentStep(0);
     }
@@ -106,7 +158,7 @@ const AnalysisContainer = () => {
     <div className="space-y-6">
       {/* Pill toggle */}
       <div className="flex justify-center">
-        <AnalysisModePicker mode={mode} onChange={setMode} />
+        <AnalysisModePicker mode={mode} onChange={handleModeChange} />
       </div>
 
       {/* Loading overlay */}
@@ -142,6 +194,15 @@ const AnalysisContainer = () => {
                 </div>
               ))}
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="w-full mt-2 text-xs text-muted-foreground hover:text-destructive"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Cancel Analysis
+            </Button>
           </CardContent>
         </Card>
       )}
