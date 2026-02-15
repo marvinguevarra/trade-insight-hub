@@ -18,7 +18,7 @@ const tierBorderColors: Record<string, string> = {
 
 const timeframes = [
   { value: "1d", label: "1 Day" },
-  { value: "1w", label: "1 Week" },
+  { value: "5d", label: "1 Week" },
   { value: "1mo", label: "1 Month" },
   { value: "3mo", label: "3 Months" },
   { value: "6mo", label: "6 Months" },
