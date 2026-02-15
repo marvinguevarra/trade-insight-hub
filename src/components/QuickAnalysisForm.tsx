@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTiers } from "@/lib/tierConfig";
+import { useToast } from "@/hooks/use-toast";
 import { Check, DollarSign, Crown } from "lucide-react";
 
 const tierIcons: Record<string, React.ReactNode> = {
@@ -16,11 +17,13 @@ const tierBorderColors: Record<string, string> = {
 };
 
 const timeframes = [
+  { value: "1d", label: "1 Day" },
   { value: "1w", label: "1 Week" },
-  { value: "1m", label: "1 Month" },
-  { value: "3m", label: "3 Months" },
-  { value: "6m", label: "6 Months" },
+  { value: "1mo", label: "1 Month" },
+  { value: "3mo", label: "3 Months" },
+  { value: "6mo", label: "6 Months" },
   { value: "1y", label: "1 Year" },
+  { value: "2y", label: "2 Years" },
 ];
 
 interface QuickAnalysisFormProps {
@@ -30,36 +33,50 @@ interface QuickAnalysisFormProps {
   onTimeframeChange: (v: string) => void;
   tier: string;
   onTierChange: (v: string) => void;
+  disabled?: boolean;
 }
 
 const QuickAnalysisForm = ({
   ticker, onTickerChange,
   timeframe, onTimeframeChange,
   tier, onTierChange,
+  disabled = false,
 }: QuickAnalysisFormProps) => {
   const { tiers } = useTiers();
 
+  const handleTickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 5);
+    onTickerChange(value);
+  };
+
   return (
     <div className="space-y-4">
+      {/* Ticker */}
       <div>
         <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
-          Ticker Symbol
+          Stock Ticker
         </label>
         <Input
           placeholder="e.g. AAPL"
           value={ticker}
-          onChange={(e) => onTickerChange(e.target.value.toUpperCase().slice(0, 5))}
+          onChange={handleTickerChange}
           maxLength={5}
           className="bg-card text-foreground"
+          disabled={disabled}
+          required
         />
+        <p className="mt-1 text-[10px] text-muted-foreground">
+          Enter symbol (e.g., AAPL, MSFT, TSLA)
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Timeframe */}
         <div>
           <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
             Timeframe
           </label>
-          <Select value={timeframe} onValueChange={onTimeframeChange}>
+          <Select value={timeframe} onValueChange={onTimeframeChange} disabled={disabled}>
             <SelectTrigger className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
@@ -73,11 +90,12 @@ const QuickAnalysisForm = ({
           </Select>
         </div>
 
+        {/* Tier */}
         <div>
           <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
             Analysis Tier
           </label>
-          <Select value={tier} onValueChange={onTierChange}>
+          <Select value={tier} onValueChange={onTierChange} disabled={disabled}>
             <SelectTrigger className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
