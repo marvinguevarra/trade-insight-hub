@@ -10,7 +10,7 @@ import AnalysisModePicker from "@/components/AnalysisModePicker";
 import QuickAnalysisForm from "@/components/QuickAnalysisForm";
 import AdvancedDataForm from "@/components/AdvancedDataForm";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "https://trading-analyzer-production-7513.up.railway.app";
 const API_TIMEOUT = 30000; // 30 seconds
 
 const loadingSteps = [
