@@ -5,8 +5,8 @@ import { useBullBearColors } from "@/hooks/useBullBearColors";
 
 export const FreshDot = () => (
   <span className="inline-flex items-center gap-1.5">
-    <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-    <span className="text-[10px] uppercase tracking-wider text-green-400">Fresh</span>
+    <span className="h-2 w-2 rounded-full bg-bull shadow-bull" />
+    <span className="text-[10px] uppercase tracking-wider text-bull">Fresh</span>
   </span>
 );
 
@@ -19,8 +19,8 @@ export const TestedDot = () => (
 
 export const FilledIcon = () => (
   <span className="inline-flex items-center gap-1">
-    <Check className="h-3.5 w-3.5 text-green-500" />
-    <span className="text-xs text-green-400">Filled</span>
+    <Check className="h-3.5 w-3.5 text-bull" />
+    <span className="text-xs text-bull">Filled</span>
   </span>
 );
 
@@ -48,7 +48,7 @@ export const DirectionBadge = ({ direction }: { direction: "up" | "down" }) => {
 
 export const TierBadge = ({ tier }: { tier: string }) => {
   const config: Record<string, { label: string; className: string }> = {
-    lite: { label: "FREE", className: "border-green-500/30 text-green-400" },
+    lite: { label: "FREE", className: "border-bull/30 text-bull" },
     standard: { label: "STD", className: "border-primary/30 text-primary" },
     premium: { label: "PRO", className: "border-yellow-500/30 text-yellow-400" },
   };
