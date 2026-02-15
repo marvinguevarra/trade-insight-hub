@@ -203,6 +203,115 @@ const ResultsPage = () => {
                 </Card>
               </div>
             )}
+
+            {/* Supply/Demand Zones */}
+            {technical?.supply_demand && (
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Demand Zones */}
+                <Card className="border-green-500/20 bg-card">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-green-400" />
+                        <CardTitle className="text-xs uppercase tracking-widest text-green-400">Demand Zones</CardTitle>
+                      </div>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {(technical.supply_demand.demand_zones || []).filter((z: any) => z.fresh).length} fresh
+                      </Badge>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Buy Areas</p>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {(technical.supply_demand.demand_zones || [])
+                      .sort((a: any, b: any) => {
+                        const currentPrice = technical.current_price || 0;
+                        return Math.abs(a.midpoint - currentPrice) - Math.abs(b.midpoint - currentPrice);
+                      })
+                      .map((zone: any, i: number) => {
+                        const currentPrice = technical.current_price || 0;
+                        const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
+                        return (
+                          <div key={i} className={`border p-3 transition-colors ${zone.fresh ? "border-green-500/30 bg-green-500/5" : "border-border bg-secondary/30"}`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-bold font-mono text-foreground">
+                                ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {zone.fresh ? "🟢 Fresh" : "⚪ Tested"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{zone.pattern}</Badge>
+                            </div>
+                            <div className="flex items-center justify-between mt-1 text-[10px]">
+                              <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
+                              <span className={distPct >= 0 ? "text-green-400" : "text-red-400"}>
+                                {distPct >= 0 ? "+" : ""}{distPct.toFixed(1)}% away
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {(!technical.supply_demand.demand_zones?.length) && (
+                      <p className="text-xs text-muted-foreground">No significant demand zones detected.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Supply Zones */}
+                <Card className="border-red-500/20 bg-card">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="h-4 w-4 text-red-400" />
+                        <CardTitle className="text-xs uppercase tracking-widest text-red-400">Supply Zones</CardTitle>
+                      </div>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {(technical.supply_demand.supply_zones || []).filter((z: any) => z.fresh).length} fresh
+                      </Badge>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Sell Areas</p>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {(technical.supply_demand.supply_zones || [])
+                      .sort((a: any, b: any) => {
+                        const currentPrice = technical.current_price || 0;
+                        return Math.abs(a.midpoint - currentPrice) - Math.abs(b.midpoint - currentPrice);
+                      })
+                      .map((zone: any, i: number) => {
+                        const currentPrice = technical.current_price || 0;
+                        const distPct = currentPrice ? (((zone.midpoint - currentPrice) / currentPrice) * 100) : 0;
+                        return (
+                          <div key={i} className={`border p-3 transition-colors ${zone.fresh ? "border-red-500/30 bg-red-500/5" : "border-border bg-secondary/30"}`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-bold font-mono text-foreground">
+                                ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {zone.fresh ? "🟢 Fresh" : "⚪ Tested"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{zone.pattern}</Badge>
+                            </div>
+                            <div className="flex items-center justify-between mt-1 text-[10px]">
+                              <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
+                              <span className={distPct >= 0 ? "text-green-400" : "text-red-400"}>
+                                {distPct >= 0 ? "+" : ""}{distPct.toFixed(1)}% away
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {(!technical.supply_demand.supply_zones?.length) && (
+                      <p className="text-xs text-muted-foreground">No significant supply zones detected.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           {/* === NEWS === */}
