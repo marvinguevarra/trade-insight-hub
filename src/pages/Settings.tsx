@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 
 const Settings = () => {
-  const [apiUrl, setApiUrl] = useState("http://localhost:8000");
+  const [apiUrl, setApiUrl] = useState("https://trading-analyzer-production-7513.up.railway.app");
   const [defaultTier, setDefaultTier] = useState("standard");
   const [budgetLimit, setBudgetLimit] = useState("10");
   const [darkMode, setDarkMode] = useState(true);
