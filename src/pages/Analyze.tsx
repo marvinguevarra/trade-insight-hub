@@ -219,7 +219,7 @@ const Analyze = () => {
                   <SelectTrigger className="bg-card text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent className="bg-card border-border">
                     {(["lite", "standard", "premium"] as const).map((t) => {
                       const isSelected = tier === t;
                       const icons = {
@@ -236,11 +236,11 @@ const Analyze = () => {
                         <SelectItem
                           key={t}
                           value={t}
-                          className={`${
+                          className={`border-l-[3px] ${
                             isSelected
-                              ? `bg-slate-700 ${borderColors[t]} border-l-[3px] text-slate-100`
-                              : "bg-slate-800 text-slate-300 border-l-[3px] border-l-transparent"
-                          } hover:bg-slate-700/70 focus:bg-slate-700/70 focus:text-slate-100`}
+                              ? `${borderColors[t]} text-foreground`
+                              : "border-l-transparent text-muted-foreground"
+                          }`}
                         >
                           <span className="inline-flex items-center gap-2">
                             {icons[t]}
