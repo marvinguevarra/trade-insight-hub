@@ -29,9 +29,10 @@ async function fetchTiers(): Promise<TierConfig[]> {
       if (!res.ok) throw new Error("Failed to fetch tiers");
       return res.json();
     })
-    .then((data: TierConfig[]) => {
-      cachedTiers = data;
-      return data;
+    .then((data) => {
+      const arr = Array.isArray(data) ? data : (data?.tiers && Array.isArray(data.tiers) ? data.tiers : Object.values(data));
+      cachedTiers = arr as TierConfig[];
+      return cachedTiers;
     })
     .catch(() => {
       cachedTiers = fallbackTiers;

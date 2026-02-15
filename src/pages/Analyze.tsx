@@ -229,7 +229,7 @@ const Analyze = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
-                    {tiers.map((t) => {
+                    {(tiers || []).map((t) => {
                       const isSelected = tier === t.id;
                       return (
                         <SelectItem
