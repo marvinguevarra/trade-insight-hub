@@ -531,12 +531,36 @@ const ResultsPage = () => {
                           <CardTitle className="text-xs uppercase tracking-widest text-green-400">Bull Case</CardTitle>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
-                          {typeof synthesis.bull_case === "string"
-                            ? synthesis.bull_case
-                            : JSON.stringify(synthesis.bull_case, null, 2)}
-                        </pre>
+                      <CardContent className="space-y-4">
+                        {typeof synthesis.bull_case === "object" && synthesis.bull_case.factors && (
+                          <div>
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Factors</h4>
+                            <ul className="space-y-1.5">
+                              {synthesis.bull_case.factors.map((f: string, i: number) => (
+                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
+                                  <span className="text-green-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span>{f}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {typeof synthesis.bull_case === "object" && synthesis.bull_case.evidence && (
+                          <div>
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Evidence</h4>
+                            <ul className="space-y-1.5">
+                              {synthesis.bull_case.evidence.map((e: string, i: number) => (
+                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                                  <span className="text-green-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span>{e}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {typeof synthesis.bull_case === "string" && (
+                          <p className="text-xs text-foreground whitespace-pre-wrap">{synthesis.bull_case}</p>
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -549,12 +573,36 @@ const ResultsPage = () => {
                           <CardTitle className="text-xs uppercase tracking-widest text-red-400">Bear Case</CardTitle>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
-                          {typeof synthesis.bear_case === "string"
-                            ? synthesis.bear_case
-                            : JSON.stringify(synthesis.bear_case, null, 2)}
-                        </pre>
+                      <CardContent className="space-y-4">
+                        {typeof synthesis.bear_case === "object" && synthesis.bear_case.factors && (
+                          <div>
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Factors</h4>
+                            <ul className="space-y-1.5">
+                              {synthesis.bear_case.factors.map((f: string, i: number) => (
+                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
+                                  <span className="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span>{f}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {typeof synthesis.bear_case === "object" && synthesis.bear_case.evidence && (
+                          <div>
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Evidence</h4>
+                            <ul className="space-y-1.5">
+                              {synthesis.bear_case.evidence.map((e: string, i: number) => (
+                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                                  <span className="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span>{e}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {typeof synthesis.bear_case === "string" && (
+                          <p className="text-xs text-foreground whitespace-pre-wrap">{synthesis.bear_case}</p>
+                        )}
                       </CardContent>
                     </Card>
                   )}
