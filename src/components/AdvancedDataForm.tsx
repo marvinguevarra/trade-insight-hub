@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Upload, FileText, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { useTiers } from "@/lib/tierConfig";
 import { Check, DollarSign, Crown } from "lucide-react";
 
@@ -21,30 +22,36 @@ interface AdvancedDataFormProps {
   onFileChange: (f: File | null) => void;
   tier: string;
   onTierChange: (v: string) => void;
+  disabled?: boolean;
 }
 
-const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange }: AdvancedDataFormProps) => {
+const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = false }: AdvancedDataFormProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { tiers } = useTiers();
+  const { toast } = useToast();
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-      const f = e.dataTransfer.files;
-      if (f?.[0]?.name.endsWith(".csv")) onFileChange(f[0]);
+      const f = e.dataTransfer.files?.[0];
+      if (f?.name.endsWith(".csv")) {
+        onFileChange(f);
+      } else {
+        toast({ variant: "destructive", title: "Invalid File", description: "Please upload a CSV file" });
+      }
     },
-    [onFileChange]
+    [onFileChange, toast]
   );
 
   return (
     <div className="space-y-4">
       {/* Dropzone */}
       {file ? (
-        <div className="flex items-center justify-between border border-border p-4">
+        <div className="flex items-center justify-between border border-success/30 bg-success/5 p-4">
           <div className="flex items-center gap-3">
-            <FileText className="h-6 w-6 text-primary" />
+            <FileText className="h-6 w-6 text-success" />
             <div>
               <p className="text-sm text-foreground">{file.name}</p>
               <p className="text-[10px] text-muted-foreground">
@@ -52,7 +59,7 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange }: AdvancedDa
               </p>
             </div>
           </div>
-          <button onClick={() => onFileChange(null)} className="text-muted-foreground hover:text-destructive">
+          <button onClick={() => onFileChange(null)} className="text-muted-foreground hover:text-destructive" disabled={disabled}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -60,31 +67,45 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange }: AdvancedDa
         <label
           className={`flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-12 transition-colors ${
             isDragging ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/30"
-          }`}
+          } ${disabled ? "pointer-events-none opacity-50" : ""}`}
           onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
           <Upload className="mb-3 h-12 w-12 text-muted-foreground" />
-          <p className="text-sm text-foreground">Upload TradingView CSV</p>
+          <p className="text-sm text-foreground">Drag & Drop CSV File</p>
           <p className="text-[10px] text-muted-foreground">or click to browse</p>
           <input
             ref={inputRef}
             type="file"
             accept=".csv"
             className="hidden"
+            disabled={disabled}
             onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])}
           />
         </label>
       )}
+
+      {/* Help text */}
+      <div className="border border-border bg-muted/30 p-3 space-y-1">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">When to use custom data:</p>
+        <ul className="text-[10px] text-muted-foreground space-y-0.5 list-disc list-inside">
+          <li>TradingView charts with custom indicators</li>
+          <li>Think or Swim exports</li>
+          <li>Specific timeframes with your setup</li>
+        </ul>
+        <p className="text-[10px] text-muted-foreground/60 pt-1">
+          Supports: TradingView, Yahoo Finance, Think or Swim, and most CSV formats
+        </p>
+      </div>
 
       {/* Tier */}
       <div>
         <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
           Analysis Tier
         </label>
-        <Select value={tier} onValueChange={onTierChange}>
+        <Select value={tier} onValueChange={onTierChange} disabled={disabled}>
           <SelectTrigger className="bg-card text-foreground">
             <SelectValue />
           </SelectTrigger>
