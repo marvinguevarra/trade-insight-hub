@@ -40,7 +40,7 @@ const mapError = (msg: string): string => {
 const AnalysisContainer = () => {
   const [mode, setMode] = useState<"quick" | "advanced">("quick");
   const [ticker, setTicker] = useState("");
-  const [timeframe, setTimeframe] = useState("1m");
+  const [timeframe, setTimeframe] = useState("1mo");
   const [tier, setTier] = useState("standard");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
