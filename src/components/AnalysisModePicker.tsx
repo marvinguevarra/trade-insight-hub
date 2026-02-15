@@ -1,33 +1,60 @@
+import { cn } from "@/lib/utils";
+
+type AnalysisMode = "quick" | "advanced";
+
 interface AnalysisModePickerProps {
-  mode: "quick" | "advanced";
-  onChange: (mode: "quick" | "advanced") => void;
+  mode: AnalysisMode;
+  onChange: (mode: AnalysisMode) => void;
 }
 
 const AnalysisModePicker = ({ mode, onChange }: AnalysisModePickerProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent, target: AnalysisMode) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      onChange(target === "quick" ? "advanced" : "quick");
+    }
+  };
+
   return (
-    <div className="inline-flex rounded-full bg-secondary p-1 gap-1">
-      <button
-        type="button"
-        onClick={() => onChange("quick")}
-        className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
-          mode === "quick"
-            ? "bg-card text-foreground shadow-md"
-            : "bg-transparent text-muted-foreground hover:text-foreground"
-        }`}
+    <div className="flex justify-center">
+      <div
+        role="tablist"
+        aria-label="Analysis mode"
+        className="inline-flex rounded-full border border-border bg-muted/50 p-1 gap-1"
       >
-        Quick Analysis
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("advanced")}
-        className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
-          mode === "advanced"
-            ? "bg-card text-foreground shadow-md"
-            : "bg-transparent text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        Advanced Data Analysis
-      </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "quick"}
+          tabIndex={mode === "quick" ? 0 : -1}
+          onClick={() => onChange("quick")}
+          onKeyDown={(e) => handleKeyDown(e, "quick")}
+          className={cn(
+            "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap",
+            mode === "quick"
+              ? "bg-background text-foreground shadow-sm"
+              : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/50"
+          )}
+        >
+          Quick Analysis
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "advanced"}
+          tabIndex={mode === "advanced" ? 0 : -1}
+          onClick={() => onChange("advanced")}
+          onKeyDown={(e) => handleKeyDown(e, "advanced")}
+          className={cn(
+            "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap",
+            mode === "advanced"
+              ? "bg-background text-foreground shadow-sm"
+              : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/50"
+          )}
+        >
+          Advanced Data Analysis
+        </button>
+      </div>
     </div>
   );
 };
