@@ -96,7 +96,6 @@ const Analyze = () => {
         symbol: data.metadata?.symbol || symbol || "UNKNOWN",
         tier,
         cost: data.cost_summary?.total_cost || 0,
-        status: "complete",
         verdict: data.synthesis?.verdict,
         fullResults: data,
       });
@@ -104,7 +103,6 @@ const Analyze = () => {
     } catch (err: any) {
       const message = err.message || "Could not reach the backend.";
       setError(message);
-      saveAnalysis({ symbol: symbol || "UNKNOWN", tier, cost: 0, status: "failed" });
       toast({ title: "Analysis failed", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
