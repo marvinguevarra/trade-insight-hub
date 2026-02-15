@@ -10,14 +10,21 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, X, Loader2, AlertCircle, Check, DollarSign, Crown } from "lucide-react";
 import { saveAnalysis } from "@/lib/analysisHistory";
 import { TierBadge } from "@/components/StatusIndicator";
+import { useTiers, getTierById } from "@/lib/tierConfig";
 import Navbar from "@/components/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const tierInfo: Record<string, { label: string; icon: string }> = {
-  lite: { label: "Lite", icon: "free" },
-  standard: { label: "Standard", icon: "std" },
-  premium: { label: "Premium", icon: "pro" },
+const tierIcons: Record<string, React.ReactNode> = {
+  lite: <Check className="h-3.5 w-3.5 text-green-500" />,
+  standard: <DollarSign className="h-3.5 w-3.5 text-sky-400" />,
+  premium: <Crown className="h-3.5 w-3.5 text-yellow-400" />,
+};
+
+const tierBorderColors: Record<string, string> = {
+  lite: "border-l-green-500",
+  standard: "border-l-sky-500",
+  premium: "border-l-purple-500",
 };
 
 const loadingSteps = [
@@ -38,6 +45,7 @@ const Analyze = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { tiers } = useTiers();
 
   useEffect(() => {
     if (!loading) return;
@@ -220,31 +228,21 @@ const Analyze = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
-                    {(["lite", "standard", "premium"] as const).map((t) => {
-                      const isSelected = tier === t;
-                      const icons = {
-                        lite: <Check className="h-3.5 w-3.5 text-green-500" />,
-                        standard: <DollarSign className="h-3.5 w-3.5 text-sky-400" />,
-                        premium: <Crown className="h-3.5 w-3.5 text-yellow-400" />,
-                      };
-                      const borderColors = {
-                        lite: "border-l-green-500",
-                        standard: "border-l-sky-500",
-                        premium: "border-l-purple-500",
-                      };
+                    {tiers.map((t) => {
+                      const isSelected = tier === t.id;
                       return (
                         <SelectItem
-                          key={t}
-                          value={t}
+                          key={t.id}
+                          value={t.id}
                           className={`border-l-[3px] ${
                             isSelected
-                              ? `${borderColors[t]} text-foreground`
+                              ? `${tierBorderColors[t.id] || ""} text-foreground`
                               : "border-l-transparent text-muted-foreground"
                           }`}
                         >
                           <span className="inline-flex items-center gap-2">
-                            {icons[t]}
-                            {tierInfo[t].label}
+                            {tierIcons[t.id]}
+                            {t.label}
                           </span>
                         </SelectItem>
                       );
@@ -256,15 +254,18 @@ const Analyze = () => {
           )}
 
           {/* Cost estimate */}
-          {!loading && (file || symbol) && (
-            <div className="flex items-center justify-between border border-border p-3 text-xs text-muted-foreground">
-              <span>Estimated cost</span>
-              <span className="text-foreground font-bold inline-flex items-center gap-2">
-                <TierBadge tier={tier} />
-                {tierInfo[tier].label}
-              </span>
-            </div>
-          )}
+          {!loading && (file || symbol) && (() => {
+            const currentTier = getTierById(tiers, tier);
+            return (
+              <div className="flex items-center justify-between border border-border p-3 text-xs text-muted-foreground">
+                <span>Estimated cost</span>
+                <span className="text-foreground font-bold inline-flex items-center gap-2">
+                  <TierBadge tier={tier} />
+                  {currentTier?.price_display || currentTier?.label || tier}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Analyze button */}
           <Button
