@@ -14,10 +14,10 @@ import Navbar from "@/components/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const tierInfo: Record<string, { label: string; cost: string }> = {
-  lite: { label: "Lite", cost: "Free" },
-  standard: { label: "Standard", cost: "$2–3" },
-  premium: { label: "Premium", cost: "$4–6" },
+const tierInfo: Record<string, { label: string; icon: string }> = {
+  lite: { label: "Lite", icon: "free" },
+  standard: { label: "Standard", icon: "std" },
+  premium: { label: "Premium", icon: "pro" },
 };
 
 const loadingSteps = [
@@ -219,25 +219,36 @@ const Analyze = () => {
                   <SelectTrigger className="bg-card text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lite">
-                      <span className="inline-flex items-center gap-2">
-                        <Check className="h-3.5 w-3.5 text-green-500" />
-                        Lite — Free
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="standard">
-                      <span className="inline-flex items-center gap-2">
-                        <DollarSign className="h-3.5 w-3.5 text-primary" />
-                        Standard — $2–3
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="premium">
-                      <span className="inline-flex items-center gap-2">
-                        <Crown className="h-3.5 w-3.5 text-yellow-400" />
-                        Premium — $4–6
-                      </span>
-                    </SelectItem>
+                  <SelectContent className="bg-slate-800 border-slate-600">
+                    {(["lite", "standard", "premium"] as const).map((t) => {
+                      const isSelected = tier === t;
+                      const icons = {
+                        lite: <Check className="h-3.5 w-3.5 text-green-500" />,
+                        standard: <DollarSign className="h-3.5 w-3.5 text-sky-400" />,
+                        premium: <Crown className="h-3.5 w-3.5 text-yellow-400" />,
+                      };
+                      const borderColors = {
+                        lite: "border-l-green-500",
+                        standard: "border-l-sky-500",
+                        premium: "border-l-purple-500",
+                      };
+                      return (
+                        <SelectItem
+                          key={t}
+                          value={t}
+                          className={`${
+                            isSelected
+                              ? `bg-slate-700 ${borderColors[t]} border-l-[3px] text-slate-100`
+                              : "bg-slate-800 text-slate-300 border-l-[3px] border-l-transparent"
+                          } hover:bg-slate-700/70 focus:bg-slate-700/70 focus:text-slate-100`}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            {icons[t]}
+                            {tierInfo[t].label}
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -250,7 +261,7 @@ const Analyze = () => {
               <span>Estimated cost</span>
               <span className="text-foreground font-bold inline-flex items-center gap-2">
                 <TierBadge tier={tier} />
-                {tierInfo[tier].cost}
+                {tierInfo[tier].label}
               </span>
             </div>
           )}
