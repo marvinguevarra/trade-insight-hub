@@ -20,20 +20,21 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav
+    <header
       className={cn(
         "sticky top-0 z-50 flex h-12 items-center justify-between border-b border-primary/20 bg-background/95 px-6 backdrop-blur transition-shadow duration-200",
         scrolled && "shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
       )}
+      role="banner"
     >
-      <Link to="/" className="flex items-center gap-2">
-        <Activity className="h-5 w-5 text-primary" />
+      <Link to="/" className="flex items-center gap-2" aria-label="Trading Analyzer Home">
+        <Activity className="h-5 w-5 text-primary" aria-hidden="true" />
         <span className="text-sm font-bold tracking-wider text-foreground">
           TRADING ANALYZER
         </span>
       </Link>
 
-      <div className="flex items-center gap-6">
+      <nav aria-label="Main navigation" className="flex items-center gap-6">
         {navLinks.map((link) => (
           <Link
             key={link.to}
@@ -44,12 +45,13 @@ const Navbar = () => {
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             )}
+            aria-current={location.pathname === link.to ? "page" : undefined}
           >
             {link.label}
           </Link>
         ))}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

@@ -102,16 +102,16 @@ const ResultsPage = () => {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => {
+              <Button variant="outline" size="sm" className="text-xs" aria-label="Download analysis as JSON" onClick={() => {
                 const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url; a.download = `${metadata?.symbol || "analysis"}.json`; a.click();
               }}>
-                <Download className="mr-1 h-3 w-3" /> JSON
+                <Download className="mr-1 h-3 w-3" aria-hidden="true" /> JSON
               </Button>
-              <Button variant="outline" size="sm" className="text-xs">
-                <Share2 className="mr-1 h-3 w-3" /> Share
+              <Button variant="outline" size="sm" className="text-xs" aria-label="Share analysis results">
+                <Share2 className="mr-1 h-3 w-3" aria-hidden="true" /> Share
               </Button>
             </div>
           </div>
@@ -534,11 +534,11 @@ const ResultsPage = () => {
                       <CardContent className="space-y-4">
                         {typeof synthesis.bull_case === "object" && synthesis.bull_case.factors && (
                           <div>
-                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Factors</h4>
-                            <ul className="space-y-1.5">
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Factors</h4>
+                            <ul className="space-y-1.5" role="list">
                               {synthesis.bull_case.factors.map((f: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
-                                  <span className="text-green-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span className="text-green-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
                                   <span>{f}</span>
                                 </li>
                               ))}
@@ -547,11 +547,11 @@ const ResultsPage = () => {
                         )}
                         {typeof synthesis.bull_case === "object" && synthesis.bull_case.evidence && (
                           <div>
-                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Evidence</h4>
-                            <ul className="space-y-1.5">
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Evidence</h4>
+                            <ul className="space-y-1.5" role="list">
                               {synthesis.bull_case.evidence.map((e: string, i: number) => (
-                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
-                                  <span className="text-green-400 mt-0.5 shrink-0">&bull;</span>
+                                <li key={i} className="flex gap-2 text-xs leading-[1.6] text-foreground/85">
+                                  <span className="text-green-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
                                   <span>{e}</span>
                                 </li>
                               ))}
@@ -576,11 +576,11 @@ const ResultsPage = () => {
                       <CardContent className="space-y-4">
                         {typeof synthesis.bear_case === "object" && synthesis.bear_case.factors && (
                           <div>
-                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Factors</h4>
-                            <ul className="space-y-1.5">
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Factors</h4>
+                            <ul className="space-y-1.5" role="list">
                               {synthesis.bear_case.factors.map((f: string, i: number) => (
                                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-foreground">
-                                  <span className="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                                  <span className="text-red-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
                                   <span>{f}</span>
                                 </li>
                               ))}
@@ -589,11 +589,11 @@ const ResultsPage = () => {
                         )}
                         {typeof synthesis.bear_case === "object" && synthesis.bear_case.evidence && (
                           <div>
-                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Evidence</h4>
-                            <ul className="space-y-1.5">
+                            <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Evidence</h4>
+                            <ul className="space-y-1.5" role="list">
                               {synthesis.bear_case.evidence.map((e: string, i: number) => (
-                                <li key={i} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
-                                  <span className="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                                <li key={i} className="flex gap-2 text-xs leading-[1.6] text-foreground/85">
+                                  <span className="text-red-400 mt-0.5 shrink-0" aria-hidden="true">&bull;</span>
                                   <span>{e}</span>
                                 </li>
                               ))}

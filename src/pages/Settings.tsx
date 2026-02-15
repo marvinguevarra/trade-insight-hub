@@ -4,15 +4,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Accessibility, Eye, Type, Zap, Focus } from "lucide-react";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 import Navbar from "@/components/Navbar";
 
 const Settings = () => {
   const [defaultTier, setDefaultTier] = useState("standard");
   const [budgetLimit, setBudgetLimit] = useState("10");
-  const [darkMode, setDarkMode] = useState(true);
   const { toast } = useToast();
+  const a11y = useAccessibility();
 
   const handleSave = () => {
     toast({ title: "Settings saved", description: "Your preferences have been updated." });
@@ -21,15 +24,15 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <main className="mx-auto max-w-2xl px-6 py-8">
         <h1 className="text-2xl font-bold text-foreground">SETTINGS</h1>
 
         <div className="mt-8 space-y-6">
           {/* Sign-up banner */}
-          <div className="flex items-center gap-3 border border-primary/20 bg-primary/5 px-4 py-3">
-            <Sparkles className="h-4 w-4 text-primary" />
+          <div className="flex items-center gap-3 border border-primary/20 bg-primary/5 px-4 py-3" role="status">
+            <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
             <span className="text-xs text-foreground">
-              💎 Sign up to save preferences across sessions
+              Sign up to save preferences across sessions
             </span>
           </div>
 
@@ -40,11 +43,11 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+                <Label htmlFor="default-tier" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
                   Default Tier
-                </label>
+                </Label>
                 <Select value={defaultTier} onValueChange={setDefaultTier}>
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger id="default-tier" className="bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -55,10 +58,11 @@ const Settings = () => {
                 </Select>
               </div>
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+                <Label htmlFor="budget-limit" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
                   Budget Limit ($)
-                </label>
+                </Label>
                 <Input
+                  id="budget-limit"
                   type="number"
                   value={budgetLimit}
                   onChange={(e) => setBudgetLimit(e.target.value)}
@@ -68,15 +72,103 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Appearance */}
+          {/* Accessibility */}
           <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-xs uppercase tracking-widest">Appearance</CardTitle>
+              <div className="flex items-center gap-2">
+                <Accessibility className="h-4 w-4 text-primary" aria-hidden="true" />
+                <CardTitle className="text-xs uppercase tracking-widest">Accessibility</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-foreground">Dark Mode</span>
-                <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+            <CardContent className="space-y-6">
+              {/* Theme */}
+              <fieldset>
+                <legend className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <Eye className="h-3 w-3" aria-hidden="true" /> Theme
+                </legend>
+                <RadioGroup value={a11y.theme} onValueChange={(v) => a11y.setTheme(v as any)} className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "dark", label: "Dark (Default)" },
+                    { value: "light", label: "Light" },
+                    { value: "high-contrast-dark", label: "High Contrast Dark" },
+                    { value: "high-contrast-light", label: "High Contrast Light" },
+                  ].map((opt) => (
+                    <Label
+                      key={opt.value}
+                      htmlFor={`theme-${opt.value}`}
+                      className="flex items-center gap-2 border border-border p-2.5 cursor-pointer hover:bg-secondary/50 transition-colors text-xs text-foreground [&:has(:checked)]:border-primary/50 [&:has(:checked)]:bg-primary/5"
+                    >
+                      <RadioGroupItem value={opt.value} id={`theme-${opt.value}`} />
+                      {opt.label}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </fieldset>
+
+              {/* Color Vision */}
+              <fieldset>
+                <legend className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <Eye className="h-3 w-3" aria-hidden="true" /> Color Vision
+                </legend>
+                <RadioGroup value={a11y.colorVision} onValueChange={(v) => a11y.setColorVision(v as any)} className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "standard", label: "Standard" },
+                    { value: "protanopia", label: "Protanopia (Red-Blind)" },
+                    { value: "deuteranopia", label: "Deuteranopia (Green-Blind)" },
+                    { value: "tritanopia", label: "Tritanopia (Blue-Blind)" },
+                  ].map((opt) => (
+                    <Label
+                      key={opt.value}
+                      htmlFor={`cv-${opt.value}`}
+                      className="flex items-center gap-2 border border-border p-2.5 cursor-pointer hover:bg-secondary/50 transition-colors text-xs text-foreground [&:has(:checked)]:border-primary/50 [&:has(:checked)]:bg-primary/5"
+                    >
+                      <RadioGroupItem value={opt.value} id={`cv-${opt.value}`} />
+                      {opt.label}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </fieldset>
+
+              {/* Text Size */}
+              <fieldset>
+                <legend className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <Type className="h-3 w-3" aria-hidden="true" /> Text Size
+                </legend>
+                <RadioGroup value={a11y.textSize} onValueChange={(v) => a11y.setTextSize(v as any)} className="grid grid-cols-4 gap-2">
+                  {[
+                    { value: "small", label: "Small" },
+                    { value: "normal", label: "Normal" },
+                    { value: "large", label: "Large" },
+                    { value: "xl", label: "Extra Large" },
+                  ].map((opt) => (
+                    <Label
+                      key={opt.value}
+                      htmlFor={`ts-${opt.value}`}
+                      className="flex items-center gap-2 border border-border p-2.5 cursor-pointer hover:bg-secondary/50 transition-colors text-xs text-foreground [&:has(:checked)]:border-primary/50 [&:has(:checked)]:bg-primary/5"
+                    >
+                      <RadioGroupItem value={opt.value} id={`ts-${opt.value}`} />
+                      {opt.label}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </fieldset>
+
+              {/* Reduce Motion */}
+              <div className="flex items-center justify-between border border-border p-3">
+                <Label htmlFor="reduce-motion" className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <Zap className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+                  Reduce Motion
+                </Label>
+                <Switch id="reduce-motion" checked={a11y.reduceMotion} onCheckedChange={a11y.setReduceMotion} />
+              </div>
+
+              {/* Enhanced Focus */}
+              <div className="flex items-center justify-between border border-border p-3">
+                <Label htmlFor="enhanced-focus" className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <Focus className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+                  Enhanced Focus Outlines
+                </Label>
+                <Switch id="enhanced-focus" checked={a11y.enhancedFocus} onCheckedChange={a11y.setEnhancedFocus} />
               </div>
             </CardContent>
           </Card>
@@ -85,7 +177,7 @@ const Settings = () => {
             Save Settings
           </Button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
