@@ -22,6 +22,13 @@ const verdictColors: Record<string, string> = {
   STRONG_BEAR: "bg-bear/20 text-bear border-bear/30",
 };
 
+const getZoneStatus = (zone: any) => {
+  const tests = zone.tests_count ?? zone.retests ?? (zone.fresh ? 0 : 1);
+  if (tests === 0 || zone.fresh) return { label: "Fresh", detail: "Never tested", className: "text-success", icon: "●" };
+  if (tests <= 2) return { label: "Active", detail: `Tested ${tests}x`, className: "text-accent", icon: "◐" };
+  return { label: "Weak", detail: `Tested ${tests}x`, className: "text-muted-foreground", icon: "○" };
+};
+
 // Pagination hook
 function usePagination<T>(items: T[], perPage: number) {
   const [page, setPage] = useState(0);
@@ -438,7 +445,7 @@ const ResultsPage = () => {
                         <CardTitle className={`text-xs uppercase tracking-widest ${bb.bull}`}>Demand Zones</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[10px]">
-                        {(technical.supply_demand.demand_zones || []).filter((z: any) => z.fresh).length} fresh
+                        {(technical.supply_demand.demand_zones || []).filter((z: any) => z.fresh).length} fresh / {(technical.supply_demand.demand_zones || []).length} total
                       </Badge>
                     </div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Buy Areas</p>
@@ -454,7 +461,11 @@ const ResultsPage = () => {
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
                               </span>
-                              {zone.fresh ? <FreshDot /> : <TestedDot />}
+                              {(() => { const s = getZoneStatus(zone); return (
+                                <span className={`text-[10px] font-medium flex items-center gap-1 ${s.className}`}>
+                                  <span>{s.icon}</span> {s.label}
+                                </span>
+                              ); })()}
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
@@ -488,7 +499,7 @@ const ResultsPage = () => {
                         <CardTitle className={`text-xs uppercase tracking-widest ${bb.bear}`}>Supply Zones</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[10px]">
-                        {(technical.supply_demand.supply_zones || []).filter((z: any) => z.fresh).length} fresh
+                        {(technical.supply_demand.supply_zones || []).filter((z: any) => z.fresh).length} fresh / {(technical.supply_demand.supply_zones || []).length} total
                       </Badge>
                     </div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Potential Sell Areas</p>
@@ -504,7 +515,11 @@ const ResultsPage = () => {
                               <span className="text-sm font-bold font-mono text-foreground">
                                 ${zone.price_low?.toFixed(2) ?? zone.range_low?.toFixed(2)} – ${zone.price_high?.toFixed(2) ?? zone.range_high?.toFixed(2)}
                               </span>
-                              {zone.fresh ? <FreshDot /> : <TestedDot />}
+                              {(() => { const s = getZoneStatus(zone); return (
+                                <span className={`text-[10px] font-medium flex items-center gap-1 ${s.className}`}>
+                                  <span>{s.icon}</span> {s.label}
+                                </span>
+                              ); })()}
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
@@ -528,6 +543,16 @@ const ResultsPage = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Zone Status Legend */}
+                <div className="md:col-span-2 text-[10px] text-muted-foreground border-t border-border pt-2 space-y-1">
+                  <div>
+                    <span className="font-medium">Zone Status:</span>{" "}
+                    <span className="text-success">● Fresh</span> — never tested, higher probability of holding • {" "}
+                    <span className="text-accent">◐ Active</span> — tested 1-2x, still viable • {" "}
+                    <span>○ Weak</span> — tested 3+ times, zone weakening
+                  </div>
+                </div>
               </div>
             )}
           </TabsContent>
