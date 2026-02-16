@@ -28,8 +28,9 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/analyze" element={<ProtectedRoute><Analyze /></ProtectedRoute>} />
-              <Route path="/results/:id" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+              <Route path="/results/live" element={<ResultsPage />} />
               <Route path="/results/history" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+              <Route path="/results/:id" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
