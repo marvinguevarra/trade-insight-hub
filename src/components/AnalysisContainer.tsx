@@ -40,7 +40,8 @@ const mapError = (msg: string): string => {
 const AnalysisContainer = () => {
   const [mode, setMode] = useState<"quick" | "advanced">("quick");
   const [ticker, setTicker] = useState("");
-  const [timeframe, setTimeframe] = useState("1mo");
+  const [interval, setInterval] = useState("1d");
+  const [period, setPeriod] = useState("1mo");
   const [tier, setTier] = useState("standard");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -105,7 +106,8 @@ const AnalysisContainer = () => {
       if (mode === "quick") {
         formData.append("mode", "ticker");
         formData.append("ticker", ticker);
-        formData.append("timeframe", timeframe);
+        formData.append("period", period);
+        formData.append("interval", interval);
         formData.append("tier", tier);
       } else {
         formData.append("mode", "csv");
@@ -215,8 +217,10 @@ const AnalysisContainer = () => {
             <QuickAnalysisForm
               ticker={ticker}
               onTickerChange={setTicker}
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
+              interval={interval}
+              onIntervalChange={setInterval}
+              period={period}
+              onPeriodChange={setPeriod}
               tier={tier}
               onTierChange={setTier}
               disabled={loading}
