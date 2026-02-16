@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTiers } from "@/lib/tierConfig";
-import { useToast } from "@/hooks/use-toast";
 import { Check, DollarSign, Crown } from "lucide-react";
 
 const tierIcons: Record<string, React.ReactNode> = {
@@ -16,21 +15,31 @@ const tierBorderColors: Record<string, string> = {
   premium: "border-l-accent",
 };
 
-const timeframes = [
-  { value: "1d", label: "1 Day" },
+const intervals = [
+  { value: "1h", label: "1 Hour" },
+  { value: "4h", label: "4 Hours" },
+  { value: "1d", label: "Daily" },
+  { value: "1wk", label: "Weekly" },
+  { value: "1mo", label: "Monthly" },
+];
+
+const periods = [
   { value: "5d", label: "1 Week" },
   { value: "1mo", label: "1 Month" },
   { value: "3mo", label: "3 Months" },
   { value: "6mo", label: "6 Months" },
   { value: "1y", label: "1 Year" },
   { value: "2y", label: "2 Years" },
+  { value: "5y", label: "5 Years" },
 ];
 
 interface QuickAnalysisFormProps {
   ticker: string;
   onTickerChange: (v: string) => void;
-  timeframe: string;
-  onTimeframeChange: (v: string) => void;
+  interval: string;
+  onIntervalChange: (v: string) => void;
+  period: string;
+  onPeriodChange: (v: string) => void;
   tier: string;
   onTierChange: (v: string) => void;
   disabled?: boolean;
@@ -38,7 +47,8 @@ interface QuickAnalysisFormProps {
 
 const QuickAnalysisForm = ({
   ticker, onTickerChange,
-  timeframe, onTimeframeChange,
+  interval, onIntervalChange,
+  period, onPeriodChange,
   tier, onTierChange,
   disabled = false,
 }: QuickAnalysisFormProps) => {
@@ -71,24 +81,49 @@ const QuickAnalysisForm = ({
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Timeframe */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Candle Timeframe */}
         <div>
           <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
-            Timeframe
+            Candle Timeframe
           </label>
-          <Select value={timeframe} onValueChange={onTimeframeChange} disabled={disabled}>
+          <Select value={interval} onValueChange={onIntervalChange} disabled={disabled}>
             <SelectTrigger className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
-              {timeframes.map((tf) => (
-                <SelectItem key={tf.value} value={tf.value}>
-                  {tf.label}
+              {intervals.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Size of each price candle
+          </p>
+        </div>
+
+        {/* Lookback Period */}
+        <div>
+          <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+            Lookback Period
+          </label>
+          <Select value={period} onValueChange={onPeriodChange} disabled={disabled}>
+            <SelectTrigger className="bg-card text-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              {periods.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            How much historical data to analyze
+          </p>
         </div>
 
         {/* Tier */}
