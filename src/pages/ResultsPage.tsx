@@ -304,7 +304,13 @@ const ResultsPage = () => {
                       </TableBody>
                     </Table>
                   ) : (
-                    <p className="text-xs text-muted-foreground">No gaps detected with current threshold.</p>
+                    <div className="text-muted-foreground py-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-success">✓</span>
+                        <span className="text-xs">No significant unfilled gaps detected</span>
+                      </div>
+                      <p className="text-[10px] ml-5">Searched for gaps &gt;1% in the analyzed period</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -320,17 +326,36 @@ const ResultsPage = () => {
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <div className="space-y-2 flex-1">
-                      {supportPag.paged.map((level: any, i: number) => (
-                        <div key={i} className={`flex items-center justify-between border border-border p-2 border-l-4 ${bb.bullBorder}/40`}>
-                          <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
-                          {level.strength != null && (
-                            <div className="flex items-center gap-2">
-                              <Progress value={level.strength} className="h-1 w-12" />
-                              <span className="text-[10px] text-muted-foreground">{level.strength}</span>
+                      {supportPag.paged.map((level: any, i: number) => {
+                        const price = typeof level === "number" ? level : level.price;
+                        const strength = level.strength;
+                        const strengthLabel = strength >= 80 ? "Strong" : strength >= 50 ? "Moderate" : strength != null ? "Weak" : null;
+                        const strengthColor = strength >= 80 ? "text-success" : strength >= 50 ? "text-accent" : "text-muted-foreground";
+                        const dist = level.distance_percent;
+                        return (
+                          <div key={i} className={`border border-border p-2 border-l-4 ${bb.bullBorder}/40`}>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-sm font-bold text-foreground font-mono">${price?.toFixed(2) || level}</span>
+                                {dist != null && (
+                                  <span className="text-[10px] text-muted-foreground ml-2">
+                                    {dist > 0 ? "+" : ""}{dist.toFixed(1)}% away
+                                  </span>
+                                )}
+                              </div>
+                              {strength != null && (
+                                <div className="text-right">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-medium ${strengthColor}`}>{strengthLabel}</span>
+                                    <span className="text-[10px] text-muted-foreground">{strength}</span>
+                                  </div>
+                                  <Progress value={strength} className="h-1 w-16 mt-0.5" />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                       {(!technical.support_resistance.support_levels?.length) && (
                         <p className="text-xs text-muted-foreground">No support levels found.</p>
                       )}
@@ -348,17 +373,36 @@ const ResultsPage = () => {
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <div className="space-y-2 flex-1">
-                      {resistPag.paged.map((level: any, i: number) => (
-                        <div key={i} className={`flex items-center justify-between border border-border p-2 border-l-4 ${bb.bearBorder}/40`}>
-                          <span className="text-sm font-bold text-foreground font-mono">${typeof level === "number" ? level.toFixed(2) : level.price?.toFixed(2) || level}</span>
-                          {level.strength != null && (
-                            <div className="flex items-center gap-2">
-                              <Progress value={level.strength} className="h-1 w-12" />
-                              <span className="text-[10px] text-muted-foreground">{level.strength}</span>
+                      {resistPag.paged.map((level: any, i: number) => {
+                        const price = typeof level === "number" ? level : level.price;
+                        const strength = level.strength;
+                        const strengthLabel = strength >= 80 ? "Strong" : strength >= 50 ? "Moderate" : strength != null ? "Weak" : null;
+                        const strengthColor = strength >= 80 ? "text-success" : strength >= 50 ? "text-accent" : "text-muted-foreground";
+                        const dist = level.distance_percent;
+                        return (
+                          <div key={i} className={`border border-border p-2 border-l-4 ${bb.bearBorder}/40`}>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-sm font-bold text-foreground font-mono">${price?.toFixed(2) || level}</span>
+                                {dist != null && (
+                                  <span className="text-[10px] text-muted-foreground ml-2">
+                                    {dist > 0 ? "+" : ""}{dist.toFixed(1)}% away
+                                  </span>
+                                )}
+                              </div>
+                              {strength != null && (
+                                <div className="text-right">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-medium ${strengthColor}`}>{strengthLabel}</span>
+                                    <span className="text-[10px] text-muted-foreground">{strength}</span>
+                                  </div>
+                                  <Progress value={strength} className="h-1 w-16 mt-0.5" />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                       {(!technical.support_resistance.resistance_levels?.length) && (
                         <p className="text-xs text-muted-foreground">No resistance levels found.</p>
                       )}
@@ -368,6 +412,14 @@ const ResultsPage = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* S/R Legend */}
+                <div className="md:col-span-2 text-[10px] text-muted-foreground border-t border-border pt-2">
+                  <span className="font-medium">Legend:</span>{" "}
+                  <span className="text-success">Strong (80+)</span> likely to hold • {" "}
+                  <span className="text-accent">Moderate (50-79)</span> watch for reaction • {" "}
+                  Weak (&lt;50) may break easily
+                </div>
               </div>
             )}
 
