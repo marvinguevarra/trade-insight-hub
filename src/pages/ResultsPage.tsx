@@ -54,6 +54,33 @@ const PatternBadge = ({ pattern }: { pattern: string }) => (
   </TooltipProvider>
 );
 
+const strengthDescriptions: Record<string, string> = {
+  Strong: "Score 80+. This level has been tested multiple times and held firmly. High probability of holding again.",
+  Moderate: "Score 50-79. This level has shown some reaction but may not hold under strong pressure.",
+  Weak: "Score below 50. This level has little historical significance and may break easily.",
+};
+
+const StrengthBadge = ({ strength, label, color }: { strength: number; label: string; color: string }) => (
+  <TooltipProvider delayDuration={200}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="text-right cursor-help">
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-medium ${color}`}>{label}</span>
+            <span className="text-[10px] text-muted-foreground">{strength}</span>
+            <Info className="w-2.5 h-2.5 text-muted-foreground" />
+          </div>
+          <Progress value={strength} className="h-1 w-16 mt-0.5" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="left" className="max-w-[220px]">
+        <p className="font-semibold text-xs mb-1">{label} Level</p>
+        <p className="text-xs text-muted-foreground">{strengthDescriptions[label] ?? "Strength score for this price level."}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 // Pagination hook
 function usePagination<T>(items: T[], perPage: number) {
   const [page, setPage] = useState(0);
@@ -379,13 +406,7 @@ const ResultsPage = () => {
                                 )}
                               </div>
                               {strength != null && (
-                                <div className="text-right">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-[10px] font-medium ${strengthColor}`}>{strengthLabel}</span>
-                                    <span className="text-[10px] text-muted-foreground">{strength}</span>
-                                  </div>
-                                  <Progress value={strength} className="h-1 w-16 mt-0.5" />
-                                </div>
+                                <StrengthBadge strength={strength} label={strengthLabel!} color={strengthColor} />
                               )}
                             </div>
                           </div>
@@ -426,13 +447,7 @@ const ResultsPage = () => {
                                 )}
                               </div>
                               {strength != null && (
-                                <div className="text-right">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-[10px] font-medium ${strengthColor}`}>{strengthLabel}</span>
-                                    <span className="text-[10px] text-muted-foreground">{strength}</span>
-                                  </div>
-                                  <Progress value={strength} className="h-1 w-16 mt-0.5" />
-                                </div>
+                                <StrengthBadge strength={strength} label={strengthLabel!} color={strengthColor} />
                               )}
                             </div>
                           </div>
