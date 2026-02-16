@@ -584,11 +584,47 @@ const ResultsPage = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
-                        {typeof fundamental.financial_health === "string"
-                          ? fundamental.financial_health
-                          : JSON.stringify(fundamental.financial_health, null, 2)}
-                      </pre>
+                      {(() => {
+                        const fh = fundamental.financial_health;
+                        if (typeof fh === "string") return <p className="text-sm text-foreground">{fh}</p>;
+                        const entries: [string, string][] = Object.entries(fh as Record<string, string>);
+                        const gradeEntry = entries.find(([k]) => k.includes("grade"));
+                        const otherEntries = entries.filter(([k]) => !k.includes("grade"));
+
+                        const getIndicatorColor = (val: string) => {
+                          const v = val.toLowerCase();
+                          if (["strong", "growing", "expanding", "a", "a+", "b+", "b"].includes(v)) return "text-success";
+                          if (["moderate", "stable", "average", "c+", "c"].includes(v)) return "text-accent";
+                          if (["weak", "declining", "contracting", "high", "d", "f"].includes(v)) return "text-destructive";
+                          return "text-foreground";
+                        };
+
+                        const formatKey = (k: string) =>
+                          k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+                        return (
+                          <div className="space-y-3">
+                            {gradeEntry && (
+                              <div className="flex items-center justify-between border-b border-border pb-3 mb-1">
+                                <span className="text-sm text-muted-foreground">{formatKey(gradeEntry[0])}</span>
+                                <span className={`text-2xl font-bold font-mono ${getIndicatorColor(gradeEntry[1])}`}>
+                                  {gradeEntry[1]}
+                                </span>
+                              </div>
+                            )}
+                            <div className="grid gap-2">
+                              {otherEntries.map(([key, val]) => (
+                                <div key={key} className="flex items-center justify-between py-1">
+                                  <span className="text-xs text-muted-foreground">{formatKey(key)}</span>
+                                  <span className={`text-sm font-medium font-mono ${getIndicatorColor(val)}`}>
+                                    {val}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 )}
