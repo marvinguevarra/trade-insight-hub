@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Check, X } from "lucide-react";
 import { saveAnalysis } from "@/lib/analysisHistory";
+import { getSettings } from "@/lib/userSettings";
 import AnalysisModePicker from "@/components/AnalysisModePicker";
 import QuickAnalysisForm from "@/components/QuickAnalysisForm";
 import AdvancedDataForm from "@/components/AdvancedDataForm";
@@ -42,7 +43,7 @@ const AnalysisContainer = () => {
   const [ticker, setTicker] = useState("");
   const [interval, setInterval] = useState("1d");
   const [period, setPeriod] = useState("1mo");
-  const [tier, setTier] = useState("standard");
+  const [tier, setTier] = useState(() => getSettings().defaultTier);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
