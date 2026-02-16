@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,30 @@ const getZoneStatus = (zone: any) => {
   if (tests <= 2) return { label: "Active", detail: `Tested ${tests}x`, className: "text-accent", icon: "◐" };
   return { label: "Weak", detail: `Tested ${tests}x`, className: "text-muted-foreground", icon: "○" };
 };
+
+const patternDescriptions: Record<string, { label: string; description: string }> = {
+  RBR: { label: "Rally-Base-Rally", description: "Price rallied, consolidated, then rallied again. Strong demand zone where buyers historically stepped in." },
+  RBD: { label: "Rally-Base-Drop", description: "Price rallied, consolidated, then dropped. A reversal zone where selling pressure overcame buyers." },
+  DBR: { label: "Drop-Base-Rally", description: "Price dropped, consolidated, then rallied. A bounce zone where buyers absorbed selling pressure." },
+  DBD: { label: "Drop-Base-Drop", description: "Price dropped, consolidated, then dropped again. Strong supply zone where sellers remain in control." },
+};
+
+const PatternBadge = ({ pattern }: { pattern: string }) => (
+  <TooltipProvider delayDuration={200}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 cursor-help gap-1">
+          {pattern}
+          <Info className="w-2.5 h-2.5 text-muted-foreground" />
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[240px]">
+        <p className="font-semibold text-xs mb-1">{patternDescriptions[pattern]?.label ?? pattern}</p>
+        <p className="text-xs text-muted-foreground">{patternDescriptions[pattern]?.description ?? "Zone formation pattern."}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 // Pagination hook
 function usePagination<T>(items: T[], perPage: number) {
@@ -469,7 +494,7 @@ const ResultsPage = () => {
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{zone.pattern}</Badge>
+                              <PatternBadge pattern={zone.pattern} />
                             </div>
                             <div className="flex items-center justify-between mt-1 text-[10px]">
                               <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
@@ -523,7 +548,7 @@ const ResultsPage = () => {
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                               <span>Mid: ${zone.midpoint?.toFixed(2)}</span>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{zone.pattern}</Badge>
+                              <PatternBadge pattern={zone.pattern} />
                             </div>
                             <div className="flex items-center justify-between mt-1 text-[10px]">
                               <span className="text-muted-foreground">Strength: <span className="text-foreground font-bold">{zone.strength}/10</span></span>
