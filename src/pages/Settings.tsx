@@ -9,15 +9,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Accessibility, Eye, Type, Zap, Focus } from "lucide-react";
 import { useAccessibility } from "@/contexts/AccessibilityContext";
+import { getSettings, saveSettings } from "@/lib/userSettings";
 import Navbar from "@/components/Navbar";
 
 const Settings = () => {
-  const [defaultTier, setDefaultTier] = useState("standard");
-  const [budgetLimit, setBudgetLimit] = useState("10");
+  const saved = getSettings();
+  const [defaultTier, setDefaultTier] = useState(saved.defaultTier);
+  const [budgetLimit, setBudgetLimit] = useState(saved.budgetLimit);
   const { toast } = useToast();
   const a11y = useAccessibility();
 
   const handleSave = () => {
+    saveSettings({ defaultTier, budgetLimit });
     toast({ title: "Settings saved", description: "Your preferences have been updated." });
   };
 
