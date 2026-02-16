@@ -127,11 +127,11 @@ const AdvancedDataForm = ({ file, onFileChange, tier, onTierChange, disabled = f
 
       {/* Tier */}
       <div>
-        <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+        <label htmlFor="adv-tier-select" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
           Analysis Tier
         </label>
         <Select value={tier} onValueChange={onTierChange} disabled={disabled}>
-          <SelectTrigger className="bg-card text-foreground">
+          <SelectTrigger id="adv-tier-select" className="bg-card text-foreground">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-card border-border">

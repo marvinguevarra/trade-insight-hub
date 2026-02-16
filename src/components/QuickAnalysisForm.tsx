@@ -84,11 +84,11 @@ const QuickAnalysisForm = ({
       <div className="grid gap-4 md:grid-cols-3">
         {/* Candle Timeframe */}
         <div>
-          <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+          <label htmlFor="interval-select" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
             Candle Timeframe
           </label>
           <Select value={interval} onValueChange={onIntervalChange} disabled={disabled}>
-            <SelectTrigger className="bg-card text-foreground">
+            <SelectTrigger id="interval-select" className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
@@ -106,11 +106,11 @@ const QuickAnalysisForm = ({
 
         {/* Lookback Period */}
         <div>
-          <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+          <label htmlFor="period-select" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
             Lookback Period
           </label>
           <Select value={period} onValueChange={onPeriodChange} disabled={disabled}>
-            <SelectTrigger className="bg-card text-foreground">
+            <SelectTrigger id="period-select" className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
@@ -128,11 +128,11 @@ const QuickAnalysisForm = ({
 
         {/* Tier */}
         <div>
-          <label className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
+          <label htmlFor="tier-select" className="mb-1 block text-[10px] uppercase tracking-widest text-muted-foreground">
             Analysis Tier
           </label>
           <Select value={tier} onValueChange={onTierChange} disabled={disabled}>
-            <SelectTrigger className="bg-card text-foreground">
+            <SelectTrigger id="tier-select" className="bg-card text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
