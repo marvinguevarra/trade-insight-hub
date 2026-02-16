@@ -26,20 +26,20 @@ const features = [
 const tiers = [
   {
     name: "Lite",
-    price: "$0.30–0.50",
+    price: "~$0.01",
     description: "Quick technical + news",
     features: ["Gap detection", "S/R levels", "News summary"],
   },
   {
     name: "Standard",
-    price: "$2–3",
+    price: "~$0.28",
     description: "Full analysis with SEC filings",
     features: ["Everything in Lite", "SEC filings analysis", "Sentiment scoring", "Supply/demand zones"],
     popular: true,
   },
   {
     name: "Premium",
-    price: "$5–7",
+    price: "~$0.45",
     description: "Deep reasoning with extended thinking",
     features: ["Everything in Standard", "Opus deep reasoning", "Extended thinking", "Bull/bear synthesis"],
   },
