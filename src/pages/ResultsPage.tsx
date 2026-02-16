@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
@@ -601,27 +601,151 @@ const ResultsPage = () => {
           <TabsContent value="news" className="mt-6 space-y-6">
             {news ? (
               <>
-                {news.sentiment_score != null && (
+                {/* NEWS HEADLINE SENTIMENT */}
+                {(news.sentiment_score != null || news.headline_sentiment) && (
                   <Card className="border-border bg-card">
                     <CardHeader>
-                      <CardTitle className="text-xs uppercase tracking-widest">Sentiment Score</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Newspaper className="h-4 w-4 text-primary" />
+                          <CardTitle className="text-xs uppercase tracking-widest">News Headline Sentiment</CardTitle>
+                        </div>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="w-4 h-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[240px]">
+                              <p className="text-xs">Analyzes recent news articles using NLP to gauge market tone. Higher scores = more positive coverage.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center gap-4">
-                        <span className="text-3xl font-bold text-foreground">{news.sentiment_score}</span>
-                        <span className="text-xs text-muted-foreground">/ 10</span>
-                        <Progress value={news.sentiment_score * 10} className="h-2 flex-1" />
-                      </div>
+                      {(() => {
+                        const hs = news.headline_sentiment;
+                        const score = hs?.score ?? news.sentiment_score;
+                        const interp = hs?.interpretation;
+                        const breakdown = hs?.breakdown;
+                        const barColor = interp === "bullish" ? "bg-bull" : interp === "bearish" ? "bg-bear" : "bg-muted-foreground";
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-4">
+                              <span className="text-3xl font-bold text-foreground">{score}</span>
+                              <span className="text-xs text-muted-foreground">/ 10</span>
+                              <div className="flex-1">
+                                <div className="h-2.5 bg-muted overflow-hidden">
+                                  <div className={`h-full transition-all ${barColor}`} style={{ width: `${(score ?? 0) * 10}%` }} />
+                                </div>
+                                {breakdown && (
+                                  <div className="text-[10px] text-muted-foreground mt-1">
+                                    <span className="text-success">{breakdown.positive_headlines ?? 0} positive</span> · {" "}
+                                    <span>{breakdown.neutral_headlines ?? 0} neutral</span> · {" "}
+                                    <span className="text-destructive">{breakdown.negative_headlines ?? 0} negative</span>
+                                  </div>
+                                )}
+                                {interp && !breakdown && (
+                                  <span className={`text-[10px] mt-1 inline-block font-medium uppercase tracking-wider ${interp === "bullish" ? "text-bull" : interp === "bearish" ? "text-bear" : "text-muted-foreground"}`}>
+                                    {interp}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 )}
 
+                {/* SOCIAL SENTIMENT (Reddit) */}
+                {news.social_sentiment && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          <CardTitle className="text-xs uppercase tracking-widest">Social Sentiment (Reddit)</CardTitle>
+                        </div>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="w-4 h-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[240px]">
+                              <p className="text-xs">Analyzes top Reddit posts from r/wallstreetbets, r/stocks, and r/investing. Score based on upvotes, comments, and sentiment.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <span className="text-3xl font-bold text-foreground">{news.social_sentiment.score}</span>
+                        <span className="text-xs text-muted-foreground">/ 10</span>
+                        <div className="flex-1">
+                          <div className="h-2.5 bg-muted overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-bear via-accent to-bull transition-all" style={{ width: `${(news.social_sentiment.score ?? 0) * 10}%` }} />
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-1">
+                            {news.social_sentiment.total_mentions} mentions · {Math.round(news.social_sentiment.avg_upvotes || 0)} avg upvotes
+                          </div>
+                        </div>
+                      </div>
+
+                      {news.social_sentiment.top_posts?.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Top Reddit Posts</p>
+                          {news.social_sentiment.top_posts.map((post: any, i: number) => (
+                            <a
+                              key={i}
+                              href={post.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block border border-border p-3 hover:bg-secondary/50 transition-colors group"
+                            >
+                              <p className="text-xs font-medium text-primary group-hover:underline mb-1">{post.title}</p>
+                              <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <ArrowUp className="w-3 h-3" /> {post.upvotes}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <MessageSquare className="w-3 h-3" /> {post.comments}
+                                </span>
+                                <span className="bg-secondary px-1.5 py-0.5 font-medium">r/{post.subreddit}</span>
+                                {post.posted && <span>{post.posted}</span>}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* No social sentiment fallback */}
+                {!news.social_sentiment && news.headline_sentiment && (
+                  <Card className="border-border bg-card">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground">Social Sentiment</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-muted-foreground">No recent Reddit mentions in the last 30 days</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* HEADLINES */}
                 {news.headlines?.length > 0 && (
                   <Card className="border-border bg-card">
                     <CardHeader>
                       <div className="flex items-center gap-2">
                         <Newspaper className="h-4 w-4 text-primary" />
-                        <CardTitle className="text-xs uppercase tracking-widest">Headlines</CardTitle>
+                        <CardTitle className="text-xs uppercase tracking-widest">Recent Headlines</CardTitle>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -663,6 +787,7 @@ const ResultsPage = () => {
                   </Card>
                 )}
 
+                {/* Catalysts & Themes */}
                 <div className="grid gap-6 md:grid-cols-2">
                   {news.catalysts?.length > 0 && (
                     <Card className="border-border bg-card">
