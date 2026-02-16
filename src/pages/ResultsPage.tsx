@@ -232,6 +232,55 @@ const ResultsPage = () => {
     3
   );
 
+  const getIndicatorColor = (val: string) => {
+    const v = val.toLowerCase();
+    if (["strong", "growing", "expanding", "a", "a+", "b+", "b"].includes(v)) return "text-success";
+    if (["moderate", "stable", "average", "c+", "c"].includes(v)) return "text-accent";
+    if (["weak", "declining", "contracting", "high", "d", "f"].includes(v)) return "text-destructive";
+    return "text-foreground";
+  };
+
+  const formatKey = (k: string) =>
+    k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const renderFinancialHealth = (data: Record<string, string>) => {
+    const entries: [string, string][] = Object.entries(data);
+    const gradeEntry = entries.find(([k]) => k.includes("grade"));
+    const otherEntries = entries.filter(([k]) => !k.includes("grade"));
+
+    return (
+      <Card className="border-border bg-card">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between pb-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-foreground">Financial Health</h3>
+            </div>
+            {gradeEntry && (
+              <span className={`text-4xl font-bold font-mono ${getIndicatorColor(gradeEntry[1])}`}>
+                {gradeEntry[1]}
+              </span>
+            )}
+          </div>
+          <div className="grid gap-3">
+            {otherEntries.map(([key, val]) => (
+              <div key={key} className="border border-border p-4">
+                <div className="text-sm text-muted-foreground mb-1">{formatKey(key)}</div>
+                <div className={`text-lg font-medium capitalize ${getIndicatorColor(val)}`}>
+                  {val}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground p-4 bg-muted/50">
+            <strong>Overall Grade:</strong> Based on revenue growth, profitability,
+            debt levels, and cash position from recent SEC filings.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (!result) {
     return (
       <div className="min-h-screen bg-background">
@@ -828,57 +877,25 @@ const ResultsPage = () => {
             {fundamental ? (
               <>
                 {fundamental.financial_health && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-primary" />
-                        <CardTitle className="text-xs uppercase tracking-widest">Financial Health</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {(() => {
-                        const fh = fundamental.financial_health;
-                        if (typeof fh === "string") return <p className="text-sm text-foreground">{fh}</p>;
-                        const entries: [string, string][] = Object.entries(fh as Record<string, string>);
-                        const gradeEntry = entries.find(([k]) => k.includes("grade"));
-                        const otherEntries = entries.filter(([k]) => !k.includes("grade"));
-
-                        const getIndicatorColor = (val: string) => {
-                          const v = val.toLowerCase();
-                          if (["strong", "growing", "expanding", "a", "a+", "b+", "b"].includes(v)) return "text-success";
-                          if (["moderate", "stable", "average", "c+", "c"].includes(v)) return "text-accent";
-                          if (["weak", "declining", "contracting", "high", "d", "f"].includes(v)) return "text-destructive";
-                          return "text-foreground";
-                        };
-
-                        const formatKey = (k: string) =>
-                          k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
+                  (() => {
+                    const fh = fundamental.financial_health;
+                    if (typeof fh === "string") {
+                      // Try to parse JSON string
+                      try {
+                        const parsed = JSON.parse(fh);
+                        return renderFinancialHealth(parsed);
+                      } catch {
                         return (
-                          <div className="space-y-3">
-                            {gradeEntry && (
-                              <div className="flex items-center justify-between border-b border-border pb-3 mb-1">
-                                <span className="text-sm text-muted-foreground">{formatKey(gradeEntry[0])}</span>
-                                <span className={`text-2xl font-bold font-mono ${getIndicatorColor(gradeEntry[1])}`}>
-                                  {gradeEntry[1]}
-                                </span>
-                              </div>
-                            )}
-                            <div className="grid gap-2">
-                              {otherEntries.map(([key, val]) => (
-                                <div key={key} className="flex items-center justify-between py-1">
-                                  <span className="text-xs text-muted-foreground">{formatKey(key)}</span>
-                                  <span className={`text-sm font-medium font-mono ${getIndicatorColor(val)}`}>
-                                    {val}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                          <Card className="border-border bg-card">
+                            <CardContent className="p-6">
+                              <p className="text-sm text-foreground">{fh}</p>
+                            </CardContent>
+                          </Card>
                         );
-                      })()}
-                    </CardContent>
-                  </Card>
+                      }
+                    }
+                    return renderFinancialHealth(fh as Record<string, string>);
+                  })()
                 )}
 
                 <div className="grid gap-6 md:grid-cols-2">
