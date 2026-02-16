@@ -134,13 +134,29 @@ const AnalysisContainer = () => {
 
       const data = await response.json();
       const symbol = mode === "quick" ? ticker : (data.metadata?.symbol || "UNKNOWN");
-      saveAnalysis({
+      const saveResult = await saveAnalysis({
         symbol,
         tier,
         cost: data.cost_summary?.total_cost || 0,
         verdict: data.synthesis?.verdict,
         fullResults: data,
       });
+      if (!saveResult.saved && saveResult.reason === "not_authenticated") {
+        toast({
+          title: "Analysis not saved",
+          description: "Sign in to save your analysis to your dashboard.",
+          action: (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/auth")}
+              className="shrink-0"
+            >
+              Sign in
+            </Button>
+          ),
+        });
+      }
       navigate("/results/live", { state: { result: data } });
     } catch (err: any) {
       if (err.name === "AbortError") {

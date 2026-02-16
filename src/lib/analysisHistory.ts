@@ -29,9 +29,9 @@ export async function saveAnalysis(record: {
   cost: number;
   verdict?: string;
   fullResults: any;
-}): Promise<void> {
+}): Promise<{ saved: boolean; reason?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { saved: false, reason: "not_authenticated" };
 
   const { error } = await supabase.from("analyses").insert({
     user_id: user.id,
@@ -42,7 +42,11 @@ export async function saveAnalysis(record: {
     full_results: record.fullResults || {},
   });
 
-  if (error) console.error("Failed to save analysis:", error);
+  if (error) {
+    console.error("Failed to save analysis:", error);
+    return { saved: false, reason: "db_error" };
+  }
+  return { saved: true };
 }
 
 export async function getAnalysisById(id: string): Promise<AnalysisRecord | null> {
