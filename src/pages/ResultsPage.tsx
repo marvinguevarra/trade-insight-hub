@@ -192,6 +192,7 @@ const ResultsPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <Tabs defaultValue="technical">
       {/* Sticky Results Header */}
       <div className="sticky top-12 z-40 border-b border-border bg-gradient-to-r from-background to-card backdrop-blur-md shadow-lg">
         <div className="mx-auto max-w-6xl px-6 py-4">
@@ -241,6 +242,16 @@ const ResultsPage = () => {
               </div>
             )}
           </div>
+
+          {/* Sticky Tabs Bar */}
+          <div className="mt-4 -mx-6 px-6 pb-3">
+            <TabsList className="bg-card border border-border w-full md:w-auto overflow-x-auto">
+              <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
+              <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
+              <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
+              <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
+            </TabsList>
+          </div>
         </div>
       </div>
 
@@ -253,14 +264,6 @@ const ResultsPage = () => {
             </AlertDescription>
           </Alert>
         )}
-        {/* Tabs */}
-        <Tabs defaultValue="technical" className="mt-0">
-          <TabsList className="bg-card border border-border w-full md:w-auto overflow-x-auto">
-            <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
-            <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
-            <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
-            <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
-          </TabsList>
 
           {/* === TECHNICAL === */}
           <TabsContent value="technical" className="mt-6 space-y-6">
@@ -849,8 +852,6 @@ const ResultsPage = () => {
               </Card>
             )}
           </TabsContent>
-        </Tabs>
-
         {/* Actions */}
         <div className="mt-8 flex justify-center">
           <Button asChild variant="outline" size="lg">
@@ -860,6 +861,7 @@ const ResultsPage = () => {
           </Button>
         </div>
       </div>
+      </Tabs>
     </div>
   );
 };
