@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
@@ -517,18 +517,25 @@ const ResultsPage = () => {
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs font-medium text-primary hover:underline"
+                                className="group flex items-start justify-between gap-2 text-xs font-medium text-primary hover:underline"
                               >
-                                {title}
+                                <span>{title}</span>
+                                <ExternalLink className="h-3 w-3 mt-0.5 shrink-0 opacity-50 group-hover:opacity-100" />
                               </a>
                             ) : (
                               <p className="text-xs font-medium text-foreground">{title}</p>
                             )}
-                            {(source || publishedAt) && (
-                              <p className="text-[10px] text-muted-foreground">
-                                {source}{source && publishedAt ? " • " : ""}{publishedAt}
-                              </p>
-                            )}
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              {source && (
+                                <span className="bg-secondary px-1.5 py-0.5 font-medium">{source}</span>
+                              )}
+                              {publishedAt && <span>{publishedAt}</span>}
+                              {url && !source && (
+                                <span className="bg-secondary px-1.5 py-0.5 font-medium truncate max-w-[200px]">
+                                  {new URL(url).hostname.replace("www.", "")}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
