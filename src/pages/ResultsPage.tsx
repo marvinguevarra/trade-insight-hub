@@ -13,7 +13,7 @@ import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import jsPDF from "jspdf";
+
 
 const verdictColors: Record<string, string> = {
   STRONG_BULL: "bg-bull/20 text-bull border-bull/30",
@@ -163,7 +163,8 @@ const ResultsPage = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     const symbol = metadata?.symbol || "UNKNOWN";
     let y = 20;
