@@ -29,24 +29,24 @@ export async function saveAnalysis(record: {
   cost: number;
   verdict?: string;
   fullResults: any;
-}): Promise<{ saved: boolean; reason?: string }> {
+}): Promise<{ saved: boolean; reason?: string; id?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { saved: false, reason: "not_authenticated" };
 
-  const { error } = await supabase.from("analyses").insert({
+  const { data, error } = await supabase.from("analyses").insert({
     user_id: user.id,
     symbol: record.symbol,
     tier: record.tier,
     cost: record.cost,
     verdict: record.verdict || null,
     full_results: record.fullResults || {},
-  });
+  }).select("id").single();
 
   if (error) {
     console.error("Failed to save analysis:", error);
     return { saved: false, reason: "db_error" };
   }
-  return { saved: true };
+  return { saved: true, id: data.id };
 }
 
 export async function getAnalysisById(id: string): Promise<AnalysisRecord | null> {

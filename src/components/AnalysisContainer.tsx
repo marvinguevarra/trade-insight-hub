@@ -141,23 +141,29 @@ const AnalysisContainer = () => {
         verdict: data.synthesis?.verdict,
         fullResults: data,
       });
-      if (!saveResult.saved && saveResult.reason === "not_authenticated") {
-        toast({
-          title: "Analysis not saved",
-          description: "Sign in to save your analysis to your dashboard.",
-          action: (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/auth")}
-              className="shrink-0"
-            >
-              Sign in
-            </Button>
-          ),
-        });
+      if (saveResult.saved && saveResult.id) {
+        // Navigate to shareable URL with data in state for immediate display
+        navigate(`/results/${saveResult.id}`, { state: { result: data }, replace: true });
+      } else {
+        if (saveResult.reason === "not_authenticated") {
+          toast({
+            title: "Analysis not saved",
+            description: "Sign in to save your analysis to your dashboard.",
+            action: (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="shrink-0"
+              >
+                Sign in
+              </Button>
+            ),
+          });
+        }
+        // Unsaved results go to /results/live with state only
+        navigate("/results/live", { state: { result: data } });
       }
-      navigate("/results/live", { state: { result: data } });
     } catch (err: any) {
       if (err.name === "AbortError") {
         toast({ title: "Timed Out", description: "Analysis took too long. Please try again.", variant: "destructive" });

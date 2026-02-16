@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare } from "lucide-react";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
@@ -111,11 +111,35 @@ const PaginationControls = ({ page, totalPages, setPage }: { page: number; total
 
 const ResultsPage = () => {
   const location = useLocation();
-  const result = location.state?.result;
+  const { id } = useParams<{ id: string }>();
+  const [fetchedResult, setFetchedResult] = useState<any>(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const stateResult = location.state?.result;
   const isHistorical = location.state?.isHistorical || false;
   const analysisDate = location.state?.analysisDate;
   const bb = useBullBearColors();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (stateResult || !id || id === "live" || id === "history") return;
+    setFetchLoading(true);
+    setFetchError(null);
+    import("@/lib/analysisHistory").then(({ getAnalysisById }) =>
+      getAnalysisById(id).then((record) => {
+        if (record?.full_results) {
+          setFetchedResult(record.full_results);
+        } else {
+          setFetchError("Analysis not found or you don't have access.");
+        }
+      }).catch(() => {
+        setFetchError("Failed to load analysis.");
+      }).finally(() => setFetchLoading(false))
+    );
+  }, [id, stateResult]);
+
+  const result = stateResult || fetchedResult;
 
   const handleShare = async () => {
     const symbol = result?.metadata?.symbol || "Analysis";
@@ -281,12 +305,24 @@ const ResultsPage = () => {
     );
   };
 
+  if (fetchLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-32">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground text-sm">Loading analysis...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!result) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="flex flex-col items-center justify-center py-32 text-center">
-          <p className="text-muted-foreground">No analysis data found.</p>
+          <p className="text-muted-foreground">{fetchError || "No analysis data found."}</p>
           <Button asChild variant="outline" className="mt-4">
             <Link to="/analyze">Run an Analysis</Link>
           </Button>
