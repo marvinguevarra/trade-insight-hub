@@ -1,6 +1,27 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import type { SupplyDemandZone } from "@/types/analysis";
+
+const patternDescriptions: Record<string, { label: string; description: string }> = {
+  RBR: {
+    label: "Rally-Base-Rally",
+    description: "Price rallied, consolidated, then rallied again. Strong demand zone where buyers historically stepped in.",
+  },
+  RBD: {
+    label: "Rally-Base-Drop",
+    description: "Price rallied, consolidated, then dropped. A reversal zone where selling pressure overcame buyers.",
+  },
+  DBR: {
+    label: "Drop-Base-Rally",
+    description: "Price dropped, consolidated, then rallied. A bounce zone where buyers absorbed selling pressure.",
+  },
+  DBD: {
+    label: "Drop-Base-Drop",
+    description: "Price dropped, consolidated, then dropped again. Strong supply zone where sellers remain in control.",
+  },
+};
 
 const ZonesCard = ({ zones }: { zones: SupplyDemandZone[] }) => {
   const freshCount = zones.filter((z) => z.fresh).length;
@@ -45,9 +66,24 @@ const ZonesCard = ({ zones }: { zones: SupplyDemandZone[] }) => {
                 <span className="font-mono text-muted-foreground">
                   ${zone.range_low.toFixed(2)} – ${zone.range_high.toFixed(2)}
                 </span>
-                <Badge variant="outline" className="text-xs">
-                  {zone.pattern}
-                </Badge>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="text-xs cursor-help gap-1">
+                        {zone.pattern}
+                        <Info className="w-3 h-3 text-muted-foreground" />
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[240px]">
+                      <p className="font-semibold text-xs mb-1">
+                        {patternDescriptions[zone.pattern]?.label ?? zone.pattern}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {patternDescriptions[zone.pattern]?.description ?? "Zone formation pattern."}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           ))}
