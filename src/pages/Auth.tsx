@@ -50,7 +50,10 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin + "/analyze" },
+      options: {
+        redirectTo: window.location.origin + "/analyze",
+        scopes: "openid email",
+      },
     });
     if (error) setError(error.message);
   };
