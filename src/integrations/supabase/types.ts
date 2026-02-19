@@ -47,6 +47,30 @@ export type Database = {
         }
         Relationships: []
       }
+      fundamental_analyses_cache: {
+        Row: {
+          analysis: Json
+          cached_at: string | null
+          filing_period: string
+          id: string
+          ticker: string
+        }
+        Insert: {
+          analysis?: Json
+          cached_at?: string | null
+          filing_period: string
+          id?: string
+          ticker: string
+        }
+        Update: {
+          analysis?: Json
+          cached_at?: string | null
+          filing_period?: string
+          id?: string
+          ticker?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -71,6 +95,36 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      sec_filings_cache: {
+        Row: {
+          cached_at: string | null
+          filing_date: string | null
+          filing_type: string
+          filing_url: string | null
+          id: string
+          text_content: string | null
+          ticker: string
+        }
+        Insert: {
+          cached_at?: string | null
+          filing_date?: string | null
+          filing_type: string
+          filing_url?: string | null
+          id?: string
+          text_content?: string | null
+          ticker: string
+        }
+        Update: {
+          cached_at?: string | null
+          filing_date?: string | null
+          filing_type?: string
+          filing_url?: string | null
+          id?: string
+          text_content?: string | null
+          ticker?: string
         }
         Relationships: []
       }
