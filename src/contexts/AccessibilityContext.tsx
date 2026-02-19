@@ -27,7 +27,7 @@ const textSizeMap: Record<TextSize, string> = {
 };
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("a11y-theme") as Theme) || "dark");
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("a11y-theme") as Theme) || "high-contrast-dark");
   const [textSize, setTextSize] = useState<TextSize>(() => (localStorage.getItem("a11y-text-size") as TextSize) || "normal");
   const [colorVision, setColorVision] = useState<ColorVision>(() => (localStorage.getItem("a11y-color-vision") as ColorVision) || "standard");
   const [reduceMotion, setReduceMotion] = useState(() => localStorage.getItem("a11y-reduce-motion") === "true");
