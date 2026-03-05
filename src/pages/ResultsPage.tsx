@@ -1317,6 +1317,9 @@ const ResultsPage = () => {
             </Link>
           </Button>
         </div>
+
+        {/* Cost Summary */}
+        {cost_summary && <CostDetails costSummary={cost_summary} tier={metadata?.tier} />}
       </div>
       </Tabs>
     </div>
