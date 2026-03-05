@@ -299,6 +299,99 @@ const ResultsPage = () => {
       y += 5;
     }
 
+    // Options Flow
+    if (result?.options?.sentiment) {
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(14);
+      doc.text("OPTIONS FLOW ANALYSIS", 20, y);
+      y += 8;
+      doc.setFontSize(10);
+      doc.text(`Sentiment: ${result.options.sentiment.toUpperCase()}`, 20, y);
+      y += 6;
+      if (result.options.sentiment_reasoning) {
+        const srLines = doc.splitTextToSize(result.options.sentiment_reasoning, 170);
+        srLines.forEach((line: string) => {
+          if (y > 280) { doc.addPage(); y = 20; }
+          doc.text(line, 20, y);
+          y += 5;
+        });
+        y += 2;
+      }
+      const il = result.options.implied_levels;
+      if (il) {
+        const parts = [il.support && `Support: ${il.support}`, il.resistance && `Resistance: ${il.resistance}`, il.max_pain && `Max Pain: ${il.max_pain}`].filter(Boolean);
+        if (parts.length) { doc.text(parts.join(" | "), 20, y); y += 6; }
+      }
+      if (result.options.key_observations?.length) {
+        result.options.key_observations.forEach((obs: string) => {
+          const oLines = doc.splitTextToSize(`• ${obs}`, 170);
+          if (y + oLines.length * 5 > 280) { doc.addPage(); y = 20; }
+          doc.text(oLines, 20, y);
+          y += oLines.length * 5 + 2;
+        });
+      }
+      if (result.options.risk_flags?.length) {
+        doc.text(`Risk Flags: ${result.options.risk_flags.join(", ")}`, 20, y);
+        y += 8;
+      }
+      y += 4;
+    }
+
+    // Fundamental
+    if (fundamental) {
+      if (y > 240) { doc.addPage(); y = 20; }
+      if (fundamental.fund_quality) {
+        // ETF
+        doc.setFontSize(14);
+        doc.text("ETF FUNDAMENTAL ANALYSIS", 20, y);
+        y += 8;
+        doc.setFontSize(10);
+        if (fundamental.fund_quality.overall_grade) {
+          doc.text(`Overall Grade: ${fundamental.fund_quality.overall_grade}`, 20, y);
+          y += 6;
+        }
+        const info = fundamental.etf_info;
+        if (info?.name) { doc.text(`Name: ${info.name}`, 20, y); y += 6; }
+        if (info?.category) { doc.text(`Category: ${info.category}`, 20, y); y += 6; }
+        if (info?.expense_ratio != null) { doc.text(`Expense Ratio: ${(info.expense_ratio * 100).toFixed(2)}%`, 20, y); y += 6; }
+        if (info?.total_assets != null) {
+          const ta = info.total_assets >= 1e12 ? `$${(info.total_assets / 1e12).toFixed(1)}T` : info.total_assets >= 1e9 ? `$${(info.total_assets / 1e9).toFixed(1)}B` : `$${(info.total_assets / 1e6).toFixed(1)}M`;
+          doc.text(`Total Assets: ${ta}`, 20, y); y += 6;
+        }
+        y += 4;
+      } else if (fundamental.financial_health) {
+        // Stock
+        doc.setFontSize(14);
+        doc.text("FUNDAMENTAL ANALYSIS", 20, y);
+        y += 8;
+        doc.setFontSize(10);
+        const fh = fundamental.financial_health;
+        if (typeof fh === "object") {
+          Object.entries(fh).forEach(([k, v]: [string, any]) => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(`${k.replace(/_/g, " ")}: ${v}`, 20, y);
+            y += 6;
+          });
+        } else if (typeof fh === "string") {
+          const fhLines = doc.splitTextToSize(fh, 170);
+          fhLines.forEach((line: string) => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(line, 20, y);
+            y += 5;
+          });
+        }
+        if (fundamental.key_metrics && Object.keys(fundamental.key_metrics).length) {
+          y += 4;
+          Object.entries(fundamental.key_metrics).forEach(([k, v]: [string, any]) => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(`${k}: ${v}`, 20, y);
+            y += 6;
+          });
+        }
+        y += 4;
+      }
+    }
+
     // Synthesis reasoning
     if (synthesis?.reasoning) {
       if (y > 240) { doc.addPage(); y = 20; }
@@ -312,6 +405,32 @@ const ResultsPage = () => {
         doc.text(line, 20, y);
         y += 5;
       });
+      y += 4;
+
+      // Risk/Reward
+      if (synthesis.risk_reward?.ratio != null) {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const rr = synthesis.risk_reward;
+        let rrText = `Risk/Reward: ${rr.ratio}:1`;
+        if (rr.upside_target) rrText += ` (Upside: ${rr.upside_target}`;
+        if (rr.downside_risk) rrText += `, Downside: ${rr.downside_risk})`;
+        else if (rr.upside_target) rrText += ")";
+        doc.text(rrText, 20, y);
+        y += 8;
+      }
+
+      // Action Items
+      if (synthesis.action_items?.length) {
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.text("Action Items:", 20, y);
+        y += 6;
+        synthesis.action_items.forEach((item: string, i: number) => {
+          const aiLines = doc.splitTextToSize(`${i + 1}. ${item}`, 170);
+          if (y + aiLines.length * 5 > 280) { doc.addPage(); y = 20; }
+          doc.text(aiLines, 20, y);
+          y += aiLines.length * 5 + 2;
+        });
+      }
     }
 
     doc.save(`${symbol}_analysis_${Date.now()}.pdf`);
