@@ -917,7 +917,9 @@ const ResultsPage = () => {
           {/* === FUNDAMENTAL === */}
           <TabsContent value="fundamental" className="mt-6 space-y-6">
             {fundamental ? (
-              <>
+              fundamental.fund_quality ? (
+                <ETFFundamentalTab fundamental={fundamental} />
+              ) : (
                 {fundamental.financial_health && (
                   (() => {
                     const fh = fundamental.financial_health;
