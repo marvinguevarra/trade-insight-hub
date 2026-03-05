@@ -970,6 +970,95 @@ const ResultsPage = () => {
                       </Card>
                     )}
                   </div>
+
+                  {/* Key Metrics */}
+                  {fundamental.key_metrics && Object.keys(fundamental.key_metrics).length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-6 space-y-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Key Metrics</h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-[10px] uppercase">Metric</TableHead>
+                              <TableHead className="text-[10px] uppercase text-right">Value</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {Object.entries(fundamental.key_metrics).map(([name, value]: [string, any]) => (
+                              <TableRow key={name}>
+                                <TableCell className="text-xs">{name}</TableCell>
+                                <TableCell className="text-xs text-right font-mono">{value}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Management Commentary */}
+                  {fundamental.management_commentary && (
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-6 space-y-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Management Commentary</h3>
+                        <div className="border-l-4 border-muted-foreground/20 pl-4">
+                          <p className="text-xs italic text-foreground/80 leading-relaxed">{fundamental.management_commentary}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Competitive Position */}
+                  {fundamental.competitive_position && (
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-6 space-y-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Competitive Position</h3>
+                        <p className="text-xs text-foreground leading-relaxed">{fundamental.competitive_position}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Filing Source */}
+                  {fundamental.filing_info && (
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-6 space-y-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Filing Source</h3>
+                        <div className="space-y-2">
+                          <p className="text-xs text-foreground">
+                            {(() => {
+                              const labels: Record<string, string> = {
+                                "10-K": "10-K Annual Report",
+                                "10-Q": "10-Q Quarterly Report",
+                                "20-F": "20-F Foreign Annual Report",
+                                "6-K": "6-K Foreign Report",
+                              };
+                              const ft = fundamental.filing_info.filing_type || fundamental.filing_info.type || "";
+                              return labels[ft] || ft;
+                            })()}
+                          </p>
+                          {(fundamental.filing_info.filing_date || fundamental.filing_info.date) && (
+                            <p className="text-xs text-muted-foreground">
+                              Filed: {fundamental.filing_info.filing_date || fundamental.filing_info.date}
+                            </p>
+                          )}
+                          {(fundamental.filing_info.filing_url || fundamental.filing_info.url) && (
+                            <a
+                              href={fundamental.filing_info.filing_url || fundamental.filing_info.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                            >
+                              View on SEC EDGAR
+                              <ExternalLink className="inline h-3 w-3" aria-hidden="true" />
+                            </a>
+                          )}
+                          {fundamental.filing_info.accession_number && (
+                            <p><span className="text-[10px] font-mono text-muted-foreground">{fundamental.filing_info.accession_number}</span></p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </>
               )
             ) : (
