@@ -39,6 +39,23 @@ export interface OptionsAnalysis {
   output_tokens?: number;
 }
 
+export interface ETFFundQuality {
+  expense_assessment: string;
+  diversification: string;
+  size_assessment: string;
+  overall_grade: string;
+}
+
+export interface ETFInfo {
+  name: string;
+  category: string;
+  fund_family: string;
+  expense_ratio: number | null;
+  total_assets: number | null;
+  holdings_count: number;
+  sector_count: number;
+}
+
 export interface AnalysisResponse {
   metadata?: any;
   technical?: any;
