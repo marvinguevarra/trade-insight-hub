@@ -183,10 +183,12 @@ const AnalysisContainer = () => {
 
   return (
     <div className="space-y-6">
-      {/* Pill toggle */}
-      <div className="flex justify-center">
-        <AnalysisModePicker mode={mode} onChange={handleModeChange} />
-      </div>
+      {/* Pill toggle — hidden during loading */}
+      {!loading && (
+        <div className="flex justify-center">
+          <AnalysisModePicker mode={mode} onChange={handleModeChange} />
+        </div>
+      )}
 
       {/* Loading overlay */}
       {loading && (
