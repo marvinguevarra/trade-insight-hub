@@ -920,57 +920,58 @@ const ResultsPage = () => {
               fundamental.fund_quality ? (
                 <ETFFundamentalTab fundamental={fundamental} />
               ) : (
-                {fundamental.financial_health && (
-                  (() => {
-                    const fh = fundamental.financial_health;
-                    if (typeof fh === "string") {
-                      // Try to parse JSON string
-                      try {
-                        const parsed = JSON.parse(fh);
-                        return renderFinancialHealth(parsed);
-                      } catch {
-                        return (
-                          <Card className="border-border bg-card">
-                            <CardContent className="p-6">
-                              <p className="text-sm text-foreground">{fh}</p>
-                            </CardContent>
-                          </Card>
-                        );
+                <>
+                  {fundamental.financial_health && (
+                    (() => {
+                      const fh = fundamental.financial_health;
+                      if (typeof fh === "string") {
+                        try {
+                          const parsed = JSON.parse(fh);
+                          return renderFinancialHealth(parsed);
+                        } catch {
+                          return (
+                            <Card className="border-border bg-card">
+                              <CardContent className="p-6">
+                                <p className="text-sm text-foreground">{fh}</p>
+                              </CardContent>
+                            </Card>
+                          );
+                        }
                       }
-                    }
-                    return renderFinancialHealth(fh as Record<string, string>);
-                  })()
-                )}
+                      return renderFinancialHealth(fh as Record<string, string>);
+                    })()
+                  )}
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  {fundamental.key_risks?.length > 0 && (
-                    <Card className="border-border bg-card">
-                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
-                      <CardContent className="space-y-1">
-                        {fundamental.key_risks.map((r: string, i: number) => (
-                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                            <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" />
-                            {r}
-                          </p>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
-                  {fundamental.opportunities?.length > 0 && (
-                    <Card className="border-border bg-card">
-                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Opportunities</CardTitle></CardHeader>
-                      <CardContent className="space-y-1">
-                        {fundamental.opportunities.map((o: string, i: number) => (
-                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                            <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" />
-                            {o}
-                          </p>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {fundamental.key_risks?.length > 0 && (
+                      <Card className="border-border bg-card">
+                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
+                        <CardContent className="space-y-1">
+                          {fundamental.key_risks.map((r: string, i: number) => (
+                            <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                              <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" />
+                              {r}
+                            </p>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                    {fundamental.opportunities?.length > 0 && (
+                      <Card className="border-border bg-card">
+                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Opportunities</CardTitle></CardHeader>
+                        <CardContent className="space-y-1">
+                          {fundamental.opportunities.map((o: string, i: number) => (
+                            <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                              <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" />
+                              {o}
+                            </p>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </>
+              )
             ) : (
               <Card className="border-border bg-card">
                 <CardContent className="py-16 text-center">
