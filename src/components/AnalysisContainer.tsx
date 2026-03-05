@@ -17,10 +17,10 @@ const API_TIMEOUT = 90000; // 90 seconds
 const getLoadingSteps = (ticker: string) => [
   { label: `FETCHING ${ticker || "MARKET"} DATA...`, duration: 3000 },
   { label: "ANALYZING TECHNICAL INDICATORS...", duration: 5000 },
-  { label: "GATHERING NEWS & SENTIMENT...", duration: 4000 },
   { label: "SCANNING OPTIONS FLOW...", duration: 3000 },
-  { label: "ANALYZING SEC FILINGS...", duration: 5000 },
-  { label: "GENERATING AI INSIGHTS...", duration: 5000 },
+  { label: "GATHERING NEWS & SENTIMENT...", duration: 4000 },
+  { label: "ANALYZING FUNDAMENTALS...", duration: 5000 },
+  { label: "GENERATING AI SYNTHESIS...", duration: 5000 },
 ];
 
 const friendlyErrors: Record<string, string> = {
