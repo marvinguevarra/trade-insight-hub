@@ -977,6 +977,11 @@ const ResultsPage = () => {
             )}
           </TabsContent>
 
+          {/* === OPTIONS === */}
+          <TabsContent value="options" className="mt-6">
+            <OptionsTab options={result.options || null} />
+          </TabsContent>
+
           {/* === SYNTHESIS === */}
           <TabsContent value="synthesis" className="mt-6 space-y-6">
             {synthesis ? (
