@@ -6,15 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, Info, FileText, ExternalLink, ArrowUp, MessageSquare, Loader2, Target, ListChecks, Zap } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import OptionsTab from "@/components/results/OptionsTab";
 
 
 const verdictColors: Record<string, string> = {
@@ -111,54 +109,12 @@ const PaginationControls = ({ page, totalPages, setPage }: { page: number; total
   </div>
 );
 
-const filingTypeLabels: Record<string, string> = {
-  "10-K": "10-K Annual Report",
-  "10-Q": "10-Q Quarterly Report",
-  "20-F": "20-F Foreign Annual Report",
-  "6-K": "6-K Foreign Report",
-};
-
-const etfGradeColors: Record<string, string> = {
-  A: "text-bull bg-bull/10",
-  B: "text-blue-400 bg-blue-400/10",
-  C: "text-yellow-300 bg-yellow-500/10",
-  D: "text-orange-400 bg-orange-400/10",
-  F: "text-bear bg-bear/10",
-};
-
-const formatAssets = (val: number | null): string => {
-  if (val == null) return "N/A";
-  if (val >= 1e12) return `$${(val / 1e12).toFixed(1)}T`;
-  if (val >= 1e9) return `$${(val / 1e9).toFixed(1)}B`;
-  if (val >= 1e6) return `$${(val / 1e6).toFixed(1)}M`;
-  return `$${val.toLocaleString()}`;
-};
-
-const formatExpenseRatio = (val: number | null): string => {
-  if (val == null) return "N/A";
-  return `${(val * 100).toFixed(2)}%`;
-};
-
-const titleCase = (s: string) =>
-  s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-function formatTime(ms: number): string {
-  if (ms >= 60000) {
-    const mins = Math.floor(ms / 60000);
-    const secs = Math.round((ms % 60000) / 1000);
-    return `${mins}m ${secs}s`;
-  }
-  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${ms}ms`;
-}
-
 const ResultsPage = () => {
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [fetchedResult, setFetchedResult] = useState<any>(null);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [costOpen, setCostOpen] = useState(false);
 
   const stateResult = location.state?.result;
   const isHistorical = location.state?.isHistorical || false;
@@ -264,84 +220,6 @@ const ResultsPage = () => {
       y += 5;
     }
 
-    // Options Flow
-    if (result?.options?.sentiment) {
-      if (y > 240) { doc.addPage(); y = 20; }
-      doc.setFontSize(14);
-      doc.text("OPTIONS FLOW ANALYSIS", 20, y);
-      y += 8;
-      doc.setFontSize(10);
-      doc.text(`Sentiment: ${result.options.sentiment.toUpperCase()}`, 20, y);
-      y += 6;
-      if (result.options.implied_levels) {
-        const il = result.options.implied_levels;
-        const parts = [
-          il.support ? `Support: ${il.support}` : null,
-          il.resistance ? `Resistance: ${il.resistance}` : null,
-          il.max_pain ? `Max Pain: ${il.max_pain}` : null,
-        ].filter(Boolean).join(" | ");
-        if (parts) { doc.text(parts, 20, y); y += 6; }
-      }
-      if (result.options.key_observations?.length) {
-        result.options.key_observations.forEach((obs: string) => {
-          const lines = doc.splitTextToSize(`• ${obs}`, 170);
-          if (y + lines.length * 5 > 280) { doc.addPage(); y = 20; }
-          doc.text(lines, 20, y);
-          y += lines.length * 5 + 2;
-        });
-      }
-      if (result.options.risk_flags?.length) {
-        doc.text(`Risk Flags: ${result.options.risk_flags.join(", ")}`, 20, y);
-        y += 8;
-      }
-      y += 4;
-    }
-
-    // Fundamental
-    if (fundamental) {
-      if (y > 240) { doc.addPage(); y = 20; }
-      if (fundamental.fund_quality) {
-        doc.setFontSize(14);
-        doc.text("ETF FUNDAMENTAL ANALYSIS", 20, y);
-        y += 8;
-        doc.setFontSize(10);
-        doc.text(`Overall Grade: ${fundamental.fund_quality.overall_grade}`, 20, y);
-        y += 6;
-        if (fundamental.etf_info?.name) { doc.text(`Name: ${fundamental.etf_info.name}`, 20, y); y += 6; }
-        if (fundamental.etf_info?.category) { doc.text(`Category: ${fundamental.etf_info.category}`, 20, y); y += 6; }
-        if (fundamental.etf_info?.expense_ratio != null) { doc.text(`Expense Ratio: ${formatExpenseRatio(fundamental.etf_info.expense_ratio)}`, 20, y); y += 6; }
-        if (fundamental.etf_info?.total_assets != null) { doc.text(`Total Assets: ${formatAssets(fundamental.etf_info.total_assets)}`, 20, y); y += 6; }
-      } else if (fundamental.financial_health) {
-        doc.setFontSize(14);
-        doc.text("FUNDAMENTAL ANALYSIS", 20, y);
-        y += 8;
-        doc.setFontSize(10);
-        if (typeof fundamental.financial_health === "object") {
-          Object.entries(fundamental.financial_health).forEach(([k, v]) => {
-            if (y > 280) { doc.addPage(); y = 20; }
-            doc.text(`${titleCase(k)}: ${v}`, 20, y);
-            y += 5;
-          });
-        } else {
-          const lines = doc.splitTextToSize(String(fundamental.financial_health), 170);
-          lines.forEach((line: string) => {
-            if (y > 280) { doc.addPage(); y = 20; }
-            doc.text(line, 20, y);
-            y += 5;
-          });
-        }
-        if (fundamental.key_metrics && Object.keys(fundamental.key_metrics).length > 0) {
-          y += 4;
-          Object.entries(fundamental.key_metrics).forEach(([k, v]) => {
-            if (y > 280) { doc.addPage(); y = 20; }
-            doc.text(`${k}: ${v}`, 20, y);
-            y += 5;
-          });
-        }
-      }
-      y += 6;
-    }
-
     // Synthesis reasoning
     if (synthesis?.reasoning) {
       if (y > 240) { doc.addPage(); y = 20; }
@@ -354,30 +232,6 @@ const ResultsPage = () => {
         if (y > 280) { doc.addPage(); y = 20; }
         doc.text(line, 20, y);
         y += 5;
-      });
-      y += 4;
-    }
-
-    // Risk/Reward
-    if (synthesis?.risk_reward) {
-      if (y > 260) { doc.addPage(); y = 20; }
-      const rr = synthesis.risk_reward;
-      doc.text(`Risk/Reward: ${rr.ratio}:1 (Upside: ${rr.upside_target}, Downside: ${rr.downside_risk})`, 20, y);
-      y += 8;
-    }
-
-    // Action Items
-    if (synthesis?.action_items?.length) {
-      if (y > 240) { doc.addPage(); y = 20; }
-      doc.setFontSize(14);
-      doc.text("Action Items", 20, y);
-      y += 8;
-      doc.setFontSize(10);
-      synthesis.action_items.forEach((item: string, i: number) => {
-        const lines = doc.splitTextToSize(`${i + 1}. ${item}`, 170);
-        if (y + lines.length * 5 > 280) { doc.addPage(); y = 20; }
-        doc.text(lines, 20, y);
-        y += lines.length * 5 + 2;
       });
     }
 
@@ -483,25 +337,6 @@ const ResultsPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
-      {/* Error Alert */}
-      {result.errors?.length > 0 && (
-        <div className="mx-auto max-w-6xl px-6 pt-4">
-          <Alert className="border-yellow-500/30 bg-yellow-500/5">
-            <AlertTriangle className="h-4 w-4 text-yellow-400" />
-            <AlertTitle className="text-xs uppercase tracking-widest text-yellow-300">Partial Results</AlertTitle>
-            <AlertDescription className="text-xs text-foreground/70">
-              <p className="mb-2">Some analysis components encountered issues. Results may be incomplete.</p>
-              <ul className="list-disc list-inside space-y-1">
-                {[...new Set(result.errors as string[])].map((err: string, i: number) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
       <Tabs defaultValue="technical">
       {/* Sticky Results Header */}
       <div className="sticky top-12 z-40 border-b border-border bg-gradient-to-r from-background to-card backdrop-blur-md shadow-lg">
@@ -559,9 +394,6 @@ const ResultsPage = () => {
               <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
               <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
               <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
-              {result.options?.sentiment && (
-                <TabsTrigger value="options" className="text-xs uppercase tracking-wider whitespace-nowrap">Options</TabsTrigger>
-              )}
               <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
             </TabsList>
           </div>
@@ -1081,285 +913,56 @@ const ResultsPage = () => {
           <TabsContent value="fundamental" className="mt-6 space-y-6">
             {fundamental ? (
               <>
-                {/* ETF Path */}
-                {fundamental.fund_quality && (
-                  <>
-                    {/* ETF Header */}
-                    {fundamental.etf_info && (
-                      <Card className="border-border bg-card">
-                        <CardContent className="p-6">
-                          <div className="space-y-1">
-                            {fundamental.etf_info.name && fundamental.etf_info.name !== "Unknown" && (
-                              <h3 className="text-lg font-semibold text-foreground">{fundamental.etf_info.name}</h3>
-                            )}
-                            <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                              {fundamental.etf_info.category && fundamental.etf_info.category !== "Unknown" && (
-                                <Badge variant="secondary" className="text-[10px]">{fundamental.etf_info.category}</Badge>
-                              )}
-                              {fundamental.etf_info.fund_family && fundamental.etf_info.fund_family !== "Unknown" && (
-                                <span>{fundamental.etf_info.fund_family}</span>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                {fundamental.financial_health && (
+                  (() => {
+                    const fh = fundamental.financial_health;
+                    if (typeof fh === "string") {
+                      // Try to parse JSON string
+                      try {
+                        const parsed = JSON.parse(fh);
+                        return renderFinancialHealth(parsed);
+                      } catch {
+                        return (
+                          <Card className="border-border bg-card">
+                            <CardContent className="p-6">
+                              <p className="text-sm text-foreground">{fh}</p>
+                            </CardContent>
+                          </Card>
+                        );
+                      }
+                    }
+                    return renderFinancialHealth(fh as Record<string, string>);
+                  })()
+                )}
 
-                    {/* Grade + Metrics */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {fundamental.key_risks?.length > 0 && (
                     <Card className="border-border bg-card">
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center justify-between pb-4 border-b border-border">
-                          <div className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
-                            <h3 className="text-lg font-semibold text-foreground">Fund Quality</h3>
-                          </div>
-                          <span className={`text-4xl font-bold font-mono px-3 py-1 ${etfGradeColors[fundamental.fund_quality.overall_grade] || "text-foreground"}`}>
-                            {fundamental.fund_quality.overall_grade}
-                          </span>
-                        </div>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="text-[10px] uppercase">Metric</TableHead>
-                              <TableHead className="text-[10px] uppercase text-right">Value</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="text-xs">Expense Assessment</TableCell>
-                              <TableCell className="text-xs text-right font-mono">{titleCase(fundamental.fund_quality.expense_assessment)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="text-xs">Diversification</TableCell>
-                              <TableCell className="text-xs text-right font-mono">{titleCase(fundamental.fund_quality.diversification)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="text-xs">Size Assessment</TableCell>
-                              <TableCell className="text-xs text-right font-mono">{titleCase(fundamental.fund_quality.size_assessment)}</TableCell>
-                            </TableRow>
-                            {fundamental.etf_info && (
-                              <>
-                                <TableRow>
-                                  <TableCell className="text-xs">Expense Ratio</TableCell>
-                                  <TableCell className="text-xs text-right font-mono">{formatExpenseRatio(fundamental.etf_info.expense_ratio)}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                  <TableCell className="text-xs">Total Assets</TableCell>
-                                  <TableCell className="text-xs text-right font-mono">{formatAssets(fundamental.etf_info.total_assets)}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                  <TableCell className="text-xs">Holdings Count</TableCell>
-                                  <TableCell className="text-xs text-right font-mono">{fundamental.etf_info.holdings_count}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                  <TableCell className="text-xs">Sector Count</TableCell>
-                                  <TableCell className="text-xs text-right font-mono">{fundamental.etf_info.sector_count}</TableCell>
-                                </TableRow>
-                              </>
-                            )}
-                          </TableBody>
-                        </Table>
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
+                      <CardContent className="space-y-1">
+                        {fundamental.key_risks.map((r: string, i: number) => (
+                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                            <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" />
+                            {r}
+                          </p>
+                        ))}
                       </CardContent>
                     </Card>
-
-                    {/* ETF text sections */}
-                    {fundamental.concentration_risk && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Concentration Risk</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-foreground leading-relaxed">{fundamental.concentration_risk}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    {fundamental.sector_analysis && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Sector Analysis</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-foreground leading-relaxed">{fundamental.sector_analysis}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    <div className="grid gap-6 md:grid-cols-2">
-                      {fundamental.key_strengths?.length > 0 && (
-                        <Card className="border-border bg-card">
-                          <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Key Strengths</CardTitle></CardHeader>
-                          <CardContent className="space-y-1">
-                            {fundamental.key_strengths.map((s: string, i: number) => (
-                              <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                                <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" aria-hidden="true" />
-                                {s}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      )}
-                      {fundamental.key_risks?.length > 0 && (
-                        <Card className="border-border bg-card">
-                          <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
-                          <CardContent className="space-y-1">
-                            {fundamental.key_risks.map((r: string, i: number) => (
-                              <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                                <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" aria-hidden="true" />
-                                {r}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-
-                    {fundamental.competitive_position && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Competitive Position</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-foreground leading-relaxed">{fundamental.competitive_position}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    {fundamental.suitability && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Suitability</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-foreground leading-relaxed">{fundamental.suitability}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </>
-                )}
-
-                {/* Stock Path (existing) — only when NOT ETF */}
-                {!fundamental.fund_quality && (
-                  <>
-                    {fundamental.financial_health && (
-                      (() => {
-                        const fh = fundamental.financial_health;
-                        if (typeof fh === "string") {
-                          try {
-                            const parsed = JSON.parse(fh);
-                            return renderFinancialHealth(parsed);
-                          } catch {
-                            return (
-                              <Card className="border-border bg-card">
-                                <CardContent className="p-6">
-                                  <p className="text-sm text-foreground">{fh}</p>
-                                </CardContent>
-                              </Card>
-                            );
-                          }
-                        }
-                        return renderFinancialHealth(fh as Record<string, string>);
-                      })()
-                    )}
-
-                    <div className="grid gap-6 md:grid-cols-2">
-                      {fundamental.key_risks?.length > 0 && (
-                        <Card className="border-border bg-card">
-                          <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bear">Key Risks</CardTitle></CardHeader>
-                          <CardContent className="space-y-1">
-                            {fundamental.key_risks.map((r: string, i: number) => (
-                              <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                                <AlertTriangle className="h-3 w-3 text-bear shrink-0 mt-0.5" />
-                                {r}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      )}
-                      {fundamental.opportunities?.length > 0 && (
-                        <Card className="border-border bg-card">
-                          <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Opportunities</CardTitle></CardHeader>
-                          <CardContent className="space-y-1">
-                            {fundamental.opportunities.map((o: string, i: number) => (
-                              <p key={i} className="text-xs text-foreground flex items-start gap-2">
-                                <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" />
-                                {o}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-
-                    {/* Prompt 4: Key Metrics */}
-                    {fundamental.key_metrics && Object.keys(fundamental.key_metrics).length > 0 && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Key Metrics</CardTitle></CardHeader>
-                        <CardContent>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="text-[10px] uppercase">Metric</TableHead>
-                                <TableHead className="text-[10px] uppercase text-right">Value</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {Object.entries(fundamental.key_metrics).map(([name, value]) => (
-                                <TableRow key={name}>
-                                  <TableCell className="text-xs">{name}</TableCell>
-                                  <TableCell className="text-xs text-right font-mono">{String(value)}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* Prompt 4: Management Commentary */}
-                    {fundamental.management_commentary && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Management Commentary</CardTitle></CardHeader>
-                        <CardContent>
-                          <div className="border-l-4 border-muted-foreground/20 pl-4">
-                            <p className="text-xs italic text-foreground/80 leading-relaxed">{fundamental.management_commentary}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* Prompt 4: Competitive Position */}
-                    {fundamental.competitive_position && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Competitive Position</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-xs text-foreground leading-relaxed">{fundamental.competitive_position}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* Prompt 4: Filing Source */}
-                    {fundamental.filing_info && (
-                      <Card className="border-border bg-card">
-                        <CardHeader><CardTitle className="text-xs uppercase tracking-widest">Filing Source</CardTitle></CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="flex items-center gap-2 text-xs text-foreground">
-                            <FileText className="h-4 w-4 text-primary" aria-hidden="true" />
-                            <span className="font-medium">
-                              {filingTypeLabels[fundamental.filing_info.filing_type] || fundamental.filing_info.filing_type}
-                            </span>
-                          </div>
-                          {fundamental.filing_info.filing_date && (
-                            <p className="text-[10px] text-muted-foreground">Filed: {fundamental.filing_info.filing_date}</p>
-                          )}
-                          {fundamental.filing_info.filing_url && (
-                            <a
-                              href={fundamental.filing_info.filing_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                            >
-                              View on SEC EDGAR <ExternalLink className="inline h-3 w-3" aria-hidden="true" />
-                            </a>
-                          )}
-                          {fundamental.filing_info.accession_number && (
-                            <p className="text-[10px] font-mono text-muted-foreground">{fundamental.filing_info.accession_number}</p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </>
-                )}
+                  )}
+                  {fundamental.opportunities?.length > 0 && (
+                    <Card className="border-border bg-card">
+                      <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-bull">Opportunities</CardTitle></CardHeader>
+                      <CardContent className="space-y-1">
+                        {fundamental.opportunities.map((o: string, i: number) => (
+                          <p key={i} className="text-xs text-foreground flex items-start gap-2">
+                            <Sparkles className="h-3 w-3 text-bull shrink-0 mt-0.5" />
+                            {o}
+                          </p>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </>
             ) : (
               <Card className="border-border bg-card">
@@ -1368,11 +971,6 @@ const ResultsPage = () => {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          {/* === OPTIONS === */}
-          <TabsContent value="options" className="mt-6">
-            <OptionsTab options={result.options || null} />
           </TabsContent>
 
           {/* === SYNTHESIS === */}
@@ -1489,142 +1087,6 @@ const ResultsPage = () => {
                     </Card>
                   )}
                 </div>
-
-                {/* Prompt 3: Risk / Reward */}
-                {synthesis.risk_reward && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-primary" aria-hidden="true" />
-                        <CardTitle className="text-xs uppercase tracking-widest">Risk / Reward</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {synthesis.risk_reward.ratio != null && (
-                        <span className={`text-3xl font-bold font-mono ${
-                          synthesis.risk_reward.ratio > 1 ? "text-bull" :
-                          synthesis.risk_reward.ratio < 1 ? "text-bear" :
-                          "text-foreground"
-                        }`}>
-                          {synthesis.risk_reward.ratio}:1
-                        </span>
-                      )}
-                      <div className="grid gap-6 md:grid-cols-2">
-                        {synthesis.risk_reward.upside_target && (
-                          <div className="border border-border p-3">
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Upside Target</span>
-                            <p className={`text-sm font-bold font-mono ${bb.bull}`}>{synthesis.risk_reward.upside_target}</p>
-                          </div>
-                        )}
-                        {synthesis.risk_reward.downside_risk && (
-                          <div className="border border-border p-3">
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Downside Risk</span>
-                            <p className={`text-sm font-bold font-mono ${bb.bear}`}>{synthesis.risk_reward.downside_risk}</p>
-                          </div>
-                        )}
-                      </div>
-                      {synthesis.risk_reward.explanation && (
-                        <p className="text-xs text-foreground leading-relaxed">{synthesis.risk_reward.explanation}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Prompt 3: Confidence Assessment */}
-                {synthesis.confidence_explanation && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <CardTitle className="text-xs uppercase tracking-widest">Confidence Assessment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="border-l-4 border-primary/30 pl-4">
-                        <p className="text-xs text-foreground leading-relaxed">{synthesis.confidence_explanation}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Prompt 3: Key Levels */}
-                {(() => {
-                  const support = synthesis.key_levels?.support || [];
-                  const resistance = synthesis.key_levels?.resistance || [];
-                  if (support.length === 0 && resistance.length === 0) return null;
-                  return (
-                    <Card className="border-border bg-card">
-                      <CardHeader>
-                        <CardTitle className="text-xs uppercase tracking-widest">Key Levels</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid gap-6 md:grid-cols-2">
-                          {support.length > 0 && (
-                            <div>
-                              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Support</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {support.map((level: string, i: number) => (
-                                  <Badge key={i} variant="outline" className={`text-[10px] ${bb.bull} border-bull/30`}>{level}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {resistance.length > 0 && (
-                            <div>
-                              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70 mb-2">Resistance</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {resistance.map((level: string, i: number) => (
-                                  <Badge key={i} variant="outline" className={`text-[10px] ${bb.bear} border-bear/30`}>{level}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
-
-                {/* Prompt 3: Catalysts to Watch */}
-                {synthesis.catalysts_to_watch?.length > 0 && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-primary" aria-hidden="true" />
-                        <CardTitle className="text-xs uppercase tracking-widest">Catalysts to Watch</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-1.5" role="list">
-                        {synthesis.catalysts_to_watch.map((c: string, i: number) => (
-                          <li key={i} className="flex gap-2 text-xs text-foreground leading-relaxed">
-                            <span className="text-primary mt-0.5 shrink-0" aria-hidden="true">•</span>
-                            <span>{c}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Prompt 3: Action Items */}
-                {synthesis.action_items?.length > 0 && (
-                  <Card className="border-border bg-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <ListChecks className="h-4 w-4 text-primary" aria-hidden="true" />
-                        <CardTitle className="text-xs uppercase tracking-widest">Action Items</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <ol className="space-y-1.5">
-                        {synthesis.action_items.map((item: string, i: number) => (
-                          <li key={i} className="flex gap-2 text-xs">
-                            <span className="text-primary font-mono shrink-0">{i + 1}.</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </CardContent>
-                  </Card>
-                )}
               </>
             ) : (
               <Card className="border-border bg-card">
@@ -1634,57 +1096,6 @@ const ResultsPage = () => {
               </Card>
             )}
           </TabsContent>
-
-        {/* Prompt 5: Collapsible Cost Summary */}
-        {cost_summary && (
-          <Collapsible open={costOpen} onOpenChange={setCostOpen} className="mt-8 border-t border-border pt-4">
-            <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full">
-              <ChevronRightIcon className={`h-3 w-3 transition-transform ${costOpen ? "rotate-90" : ""}`} />
-              <span className="uppercase tracking-widest text-[10px]">Analysis Details</span>
-              <span className="font-mono">— ${cost_summary.total_cost?.toFixed(4)} · {formatTime(cost_summary.execution_time_ms || 0)} · {cost_summary.total_calls || 0} calls</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4 space-y-4">
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                {metadata?.tier && (
-                  <Badge variant="outline" className="text-[10px]">{metadata.tier} tier</Badge>
-                )}
-                {cost_summary.budget > 0 && (
-                  <span className="font-mono">${cost_summary.budget_remaining?.toFixed(2)} / ${cost_summary.budget?.toFixed(2)} budget</span>
-                )}
-              </div>
-
-              {cost_summary.breakdown && Object.keys(cost_summary.breakdown).length > 0 && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[10px] uppercase">Model</TableHead>
-                      <TableHead className="text-[10px] uppercase text-right">Cost</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.entries(cost_summary.breakdown).map(([model, cost]) => (
-                      <TableRow key={model}>
-                        <TableCell className="text-xs font-mono">{model}</TableCell>
-                        <TableCell className="text-xs text-right font-mono">${(cost as number).toFixed(4)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-
-              {cost_summary.timings && Object.keys(cost_summary.timings).length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(cost_summary.timings).map(([step, ms]) => (
-                    <Badge key={step} variant="outline" className="text-[10px]">
-                      {titleCase(step)}: {formatTime(ms as number)}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-
         {/* Actions */}
         <div className="mt-8 flex justify-center">
           <Button asChild variant="outline" size="lg">

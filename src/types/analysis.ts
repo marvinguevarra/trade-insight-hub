@@ -22,57 +22,6 @@ export interface SupplyDemandZone {
   fresh: boolean;
 }
 
-export interface OptionsAnalysis {
-  sentiment: string;
-  sentiment_reasoning?: string;
-  key_observations?: string[];
-  positioning_summary?: string;
-  implied_levels?: {
-    support?: string;
-    resistance?: string;
-    max_pain?: string;
-  };
-  unusual_activity?: string;
-  risk_flags?: string[];
-  cost?: number;
-  input_tokens?: number;
-  output_tokens?: number;
-}
-
-export interface ETFFundQuality {
-  expense_assessment: string;
-  diversification: string;
-  size_assessment: string;
-  overall_grade: string;
-}
-
-export interface ETFInfo {
-  name: string;
-  category: string;
-  fund_family: string;
-  expense_ratio: number | null;
-  total_assets: number | null;
-  holdings_count: number;
-  sector_count: number;
-}
-
-export interface FilingInfo {
-  filing_type: string;
-  filing_date: string;
-  filing_url: string;
-  accession_number: string;
-}
-
-export interface CostSummary {
-  total_cost: number;
-  breakdown: Record<string, number>;
-  budget: number;
-  budget_remaining: number;
-  execution_time_ms: number;
-  total_calls: number;
-  timings?: Record<string, number>;
-}
-
 export interface AnalysisResult {
   symbol: string;
   current_price: number;
