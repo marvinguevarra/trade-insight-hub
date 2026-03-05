@@ -341,6 +341,23 @@ const ResultsPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Tabs defaultValue="technical">
+      {/* Error Alert */}
+      {result.errors?.length > 0 && (
+        <div className="mx-auto max-w-6xl px-6 pt-4">
+          <Alert className="border-yellow-500/30 bg-yellow-500/5 mb-4">
+            <AlertTriangle className="h-4 w-4 text-yellow-400" />
+            <AlertTitle className="text-xs uppercase tracking-widest text-yellow-300">Partial Results</AlertTitle>
+            <AlertDescription className="text-xs text-foreground/70">
+              <p className="mb-2">Some analysis components encountered issues. Results may be incomplete.</p>
+              <ul className="list-disc list-inside space-y-1">
+                {[...new Set(result.errors as string[])].map((err: string, i: number) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       {/* Sticky Results Header */}
       <div className="sticky top-12 z-40 border-b border-border bg-gradient-to-r from-background to-card backdrop-blur-md shadow-lg">
         <div className="mx-auto max-w-6xl px-6 py-4">
