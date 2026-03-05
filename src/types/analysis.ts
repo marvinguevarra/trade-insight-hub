@@ -22,6 +22,33 @@ export interface SupplyDemandZone {
   fresh: boolean;
 }
 
+export interface OptionsAnalysis {
+  sentiment: "bullish" | "bearish" | "neutral";
+  sentiment_reasoning: string;
+  key_observations: string[];
+  positioning_summary: string;
+  implied_levels: {
+    support: string;
+    resistance: string;
+    max_pain: string;
+  };
+  unusual_activity: string;
+  risk_flags: string[];
+  cost?: number;
+  input_tokens?: number;
+  output_tokens?: number;
+}
+
+export interface AnalysisResponse {
+  metadata?: any;
+  technical?: any;
+  news?: any;
+  fundamental?: any;
+  options?: OptionsAnalysis;
+  synthesis?: any;
+  cost_summary?: any;
+}
+
 export interface AnalysisResult {
   symbol: string;
   current_price: number;

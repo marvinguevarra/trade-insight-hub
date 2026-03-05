@@ -13,6 +13,7 @@ import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import OptionsTab from "@/components/results/OptionsTab";
 
 
 const verdictColors: Record<string, string> = {
@@ -394,6 +395,9 @@ const ResultsPage = () => {
               <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
               <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
               <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
+              {result.options?.sentiment && (
+                <TabsTrigger value="options" className="text-xs uppercase tracking-wider whitespace-nowrap">Options</TabsTrigger>
+              )}
               <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
             </TabsList>
           </div>
@@ -971,6 +975,11 @@ const ResultsPage = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* === OPTIONS === */}
+          <TabsContent value="options" className="mt-6">
+            <OptionsTab options={result.options || null} />
           </TabsContent>
 
           {/* === SYNTHESIS === */}
