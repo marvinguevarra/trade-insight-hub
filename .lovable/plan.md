@@ -1,109 +1,51 @@
 
 
-# Frontend Polish & Results Page Improvements
+# Implementation Plan: 7 LOVABLE_PROMPTS.md Prompts + Progress Log
 
-## Summary
-After auditing the codebase, many edge cases from your list are already handled. This plan covers the remaining gaps, organized into 3 focused batches you can approve one at a time.
+I'll work through all 7 prompts sequentially and create a `BUILD_LOG.md` file in the repo root so you (and Claude Code) can review exactly what was done.
 
----
+## Execution Order
 
-## What's Already Done (No Work Needed)
-- File size validation (10MB limit, client-side)
-- Multiple file drop rejection with toast
-- Friendly error message mapping
-- Cancel button during loading
-- Mode toggle locked during loading
-- API timeout (30 seconds) with AbortController
-- Empty results state on ResultsPage (redirects to /analyze)
-- Empty tab states for News, Fundamental, Synthesis
-- Historical report banner (shows date, links to re-analyze)
-- Ticker auto-uppercase and max 5 chars
-- Pill toggle has ARIA roles, keyboard arrow support
-- Form data persists when switching tabs (state lives in parent)
+### Prompt 7: Loading Steps Update (simplest, do first)
+- Update `getLoadingSteps` in `AnalysisContainer.tsx` — add "SCANNING OPTIONS FLOW..." step, rename SEC/Insights labels
 
----
+### Prompt 1: Options Flow Analysis Tab
+- Add `OptionsAnalysis` type to `src/types/analysis.ts`
+- Create `src/components/results/OptionsTab.tsx` component
+- Add Options tab trigger + content to `ResultsPage.tsx` (between Fundamental and Synthesis)
 
-## Batch 1: Results Page Fixes (News Links, Share, PDF)
+### Prompt 2: ETF Fundamental Display
+- Add `ETFFundQuality`, `ETFInfo` types and optional ETF fields to `FundamentalAnalysis` in `analysis.ts`
+- Add ETF detection branch in `ResultsPage.tsx` fundamental tab (stock path untouched)
 
-### 1A. Clickable News Headlines with Sources
-**File:** `src/pages/ResultsPage.tsx` (lines 405-408)
+### Prompt 3: Synthesis Tab Completion
+- Add risk/reward, confidence, key levels, catalysts, action items sections after existing bear case in `ResultsPage.tsx`
 
-Currently headlines render as plain divs. Change to:
-- Wrap in `<a>` tag if `h.url` exists, with `target="_blank"` and `rel="noopener noreferrer"`
-- Show source name and timestamp below headline in muted text
-- Use `text-primary` for link color with `hover:underline`
+### Prompt 4: Stock Fundamental Completion
+- Add key metrics table, management commentary, competitive position, filing source cards after existing opportunities card
+- Update `filing_info` type if needed
 
-### 1B. Working Share Button
-**File:** `src/pages/ResultsPage.tsx` (line 118)
+### Prompt 5: Cost Summary & Error Display
+- Add error alert above tabs in `ResultsPage.tsx`
+- Add collapsible "Analysis Details" section below all tab content with cost breakdown, timings
 
-Add an `onClick` handler that:
-- Tries `navigator.share()` first (mobile)
-- Falls back to `navigator.clipboard.writeText()` (desktop)
-- Shows toast confirmation on copy
-- Handles errors gracefully
+### Prompt 6: PDF Export Updates
+- Add Options, Fundamental (stock + ETF), and enhanced Synthesis sections to `handleDownloadPDF`
 
-### 1C. PDF Export (Replace JSON)
-**File:** `src/pages/ResultsPage.tsx` (lines 110-116)
+### Final: BUILD_LOG.md
+- Create `BUILD_LOG.md` documenting all changes made, files touched, and any decisions/edge cases encountered
 
-- Install `jspdf` dependency
-- Replace JSON download with a formatted PDF containing: header (symbol, date, tier), technical summary, news headlines, synthesis/verdict
-- Keep JSON as a secondary option or remove entirely
+## Key Patterns to Follow
+- All new sections guarded with optional chaining and truthiness checks
+- `useBullBearColors()` for sentiment coloring
+- Empty state card pattern for null data
+- Terminal aesthetic: `text-[10px] uppercase tracking-widest`, monospace, sharp corners
+- No changes to existing rendering paths
 
----
+## Files Modified
+- `src/types/analysis.ts` — new types (OptionsAnalysis, ETFFundQuality, ETFInfo, filing_info update)
+- `src/components/results/OptionsTab.tsx` — new file
+- `src/pages/ResultsPage.tsx` — Options tab, ETF branch, Synthesis additions, Fundamental additions, error alert, cost summary
+- `src/components/AnalysisContainer.tsx` — loading steps
+- `BUILD_LOG.md` — new file, progress documentation
 
-## Batch 2: Form Input & Mobile Fixes
-
-### 2A. Allow Dots and Numbers in Ticker Input
-**File:** `src/components/QuickAnalysisForm.tsx` (line 55)
-
-Current regex `/[^A-Za-z]/g` blocks dots and numbers, making tickers like `BRK.A` or `BRK.B` impossible. Change to `/[^A-Za-z0-9.]/g` and increase max length to 6.
-
-### 2B. Mobile-Friendly Upload Text
-**File:** `src/components/AdvancedDataForm.tsx`
-
-Detect mobile via the existing `useIsMobile` hook. Show "Tap to upload" instead of "Drag & Drop CSV File" on mobile devices.
-
-### 2C. Scrollable Tabs on Mobile
-**File:** `src/pages/ResultsPage.tsx` (lines 155-160)
-
-Add `overflow-x-auto` and `whitespace-nowrap` to the TabsList so the 4 tabs scroll horizontally on small screens instead of wrapping or overflowing.
-
----
-
-## Batch 3: Accessibility & Polish
-
-### 3A. Visible Focus Indicators
-Ensure all interactive elements (buttons, inputs, tabs, toggle) have visible focus rings using Tailwind's `focus-visible:ring-2 focus-visible:ring-primary`.
-
-### 3B. Screen Reader Announcements for Loading
-**File:** `src/components/AnalysisContainer.tsx`
-
-Add `aria-live="polite"` region around the loading steps so screen readers announce progress changes.
-
-### 3C. Form Label Associations
-Verify all inputs have proper `htmlFor`/`id` pairings. Currently labels use `<label>` elements but without explicit `for` attributes -- add `id` to inputs and `htmlFor` to labels.
-
----
-
-## Recommended Approach
-
-Send me **"Implement Batch 1"** to start with the results page fixes (news links, share, PDF). Each batch is independent and testable on its own. After each batch, you can verify in the preview before moving to the next.
-
----
-
-## Technical Details
-
-### New Dependency
-- `jspdf` -- for PDF generation (Batch 1C only)
-
-### Files Modified Per Batch
-| Batch | Files |
-|-------|-------|
-| 1 | `ResultsPage.tsx` |
-| 2 | `QuickAnalysisForm.tsx`, `AdvancedDataForm.tsx`, `ResultsPage.tsx` |
-| 3 | `AnalysisContainer.tsx`, `QuickAnalysisForm.tsx`, `AdvancedDataForm.tsx` |
-
-### Risk Assessment
-- Batch 1: Low risk -- isolated to results display
-- Batch 2: Low risk -- small input changes
-- Batch 3: Low risk -- additive accessibility attributes only
