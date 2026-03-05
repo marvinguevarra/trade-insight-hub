@@ -14,6 +14,7 @@ import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import OptionsTab from "@/components/results/OptionsTab";
+import ETFFundamentalTab from "@/components/results/ETFFundamentalTab";
 
 
 const verdictColors: Record<string, string> = {
