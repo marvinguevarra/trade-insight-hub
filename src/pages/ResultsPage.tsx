@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
@@ -15,6 +16,82 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import OptionsTab from "@/components/results/OptionsTab";
 import ETFFundamentalTab from "@/components/results/ETFFundamentalTab";
+
+function formatTime(ms: number): string {
+  if (ms >= 60000) {
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.round((ms % 60000) / 1000);
+    return `${mins}m ${secs}s`;
+  }
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${ms}ms`;
+}
+
+const CostDetails = ({ costSummary, tier }: { costSummary: any; tier?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const breakdown = costSummary.breakdown || {};
+  const timings = costSummary.timings || {};
+  const hasBreakdown = Object.keys(breakdown).length > 0;
+  const hasTimings = Object.keys(timings).length > 0;
+
+  return (
+    <div className="mt-6 mb-4">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <ChevronRight className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+          <span className="uppercase tracking-widest text-[10px]">Analysis Details</span>
+          <span className="font-mono">
+            — ${costSummary.total_cost?.toFixed(4)} · {formatTime(costSummary.execution_time_ms || 0)} · {costSummary.total_calls || 0} calls
+          </span>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4 space-y-4 pl-5">
+          {/* Tier & Budget */}
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            {tier && (
+              <span>Tier: <Badge variant="outline" className="text-[10px] ml-1">{tier}</Badge></span>
+            )}
+            {costSummary.budget > 0 && (
+              <span className="font-mono">
+                Budget: ${costSummary.budget_remaining?.toFixed(4)} / ${costSummary.budget?.toFixed(2)} remaining
+              </span>
+            )}
+          </div>
+
+          {/* Breakdown Table */}
+          {hasBreakdown && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-[10px] uppercase">Model</TableHead>
+                  <TableHead className="text-[10px] uppercase text-right">Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(breakdown).map(([model, cost]: [string, any]) => (
+                  <TableRow key={model}>
+                    <TableCell className="text-xs font-mono">{model}</TableCell>
+                    <TableCell className="text-xs text-right font-mono">${Number(cost).toFixed(4)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          {/* Timings */}
+          {hasTimings && (
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(timings).map(([step, ms]: [string, any]) => (
+                <Badge key={step} variant="outline" className="text-[10px] font-mono">
+                  {step}: {formatTime(Number(ms))}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+};
 
 
 const verdictColors: Record<string, string> = {
@@ -340,6 +417,23 @@ const ResultsPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Tabs defaultValue="technical">
+      {/* Error Alert */}
+      {result.errors?.length > 0 && (
+        <div className="mx-auto max-w-6xl px-6 pt-4">
+          <Alert className="border-yellow-500/30 bg-yellow-500/5 mb-4">
+            <AlertTriangle className="h-4 w-4 text-yellow-400" />
+            <AlertTitle className="text-xs uppercase tracking-widest text-yellow-300">Partial Results</AlertTitle>
+            <AlertDescription className="text-xs text-foreground/70">
+              <p className="mb-2">Some analysis components encountered issues. Results may be incomplete.</p>
+              <ul className="list-disc list-inside space-y-1">
+                {[...new Set(result.errors as string[])].map((err: string, i: number) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       {/* Sticky Results Header */}
       <div className="sticky top-12 z-40 border-b border-border bg-gradient-to-r from-background to-card backdrop-blur-md shadow-lg">
         <div className="mx-auto max-w-6xl px-6 py-4">
@@ -1316,6 +1410,9 @@ const ResultsPage = () => {
             </Link>
           </Button>
         </div>
+
+        {/* Cost Summary */}
+        {cost_summary && <CostDetails costSummary={cost_summary} tier={metadata?.tier} />}
       </div>
       </Tabs>
     </div>
