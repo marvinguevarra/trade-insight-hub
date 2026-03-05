@@ -13,6 +13,7 @@ import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@
 import { useBullBearColors } from "@/hooks/useBullBearColors";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import OptionsTab from "@/components/results/OptionsTab";
 
 
 const verdictColors: Record<string, string> = {
