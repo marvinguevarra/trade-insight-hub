@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Download, Share2, ArrowLeft, TrendingUp, TrendingDown, Newspaper, Shield, Brain, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Info, FileText, ExternalLink, ArrowUp, MessageSquare, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FreshDot, TestedDot, FilledIcon, UnfilledIcon, DirectionBadge } from "@/components/StatusIndicator";
 import { useBullBearColors } from "@/hooks/useBullBearColors";
