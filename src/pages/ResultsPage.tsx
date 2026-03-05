@@ -395,6 +395,9 @@ const ResultsPage = () => {
               <TabsTrigger value="technical" className="text-xs uppercase tracking-wider whitespace-nowrap">Technical</TabsTrigger>
               <TabsTrigger value="news" className="text-xs uppercase tracking-wider whitespace-nowrap">News</TabsTrigger>
               <TabsTrigger value="fundamental" className="text-xs uppercase tracking-wider whitespace-nowrap">Fundamental</TabsTrigger>
+              {result.options?.sentiment && (
+                <TabsTrigger value="options" className="text-xs uppercase tracking-wider whitespace-nowrap">Options</TabsTrigger>
+              )}
               <TabsTrigger value="synthesis" className="text-xs uppercase tracking-wider whitespace-nowrap">Synthesis</TabsTrigger>
             </TabsList>
           </div>
