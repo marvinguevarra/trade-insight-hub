@@ -1100,6 +1100,116 @@ const ResultsPage = () => {
                     </Card>
                   )}
                 </div>
+
+                {/* Risk / Reward */}
+                {synthesis.risk_reward && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="p-6 space-y-4">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Risk / Reward</h3>
+                      {synthesis.risk_reward.ratio != null && (
+                        <p className={`text-3xl font-bold font-mono ${
+                          synthesis.risk_reward.ratio > 1 ? bb.bull : synthesis.risk_reward.ratio < 1 ? bb.bear : "text-foreground"
+                        }`}>
+                          {synthesis.risk_reward.ratio}:1
+                        </p>
+                      )}
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {synthesis.risk_reward.upside_target && (
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-foreground/70">Upside Target</span>
+                            <p className={`text-sm font-mono font-medium ${bb.bull}`}>{synthesis.risk_reward.upside_target}</p>
+                          </div>
+                        )}
+                        {synthesis.risk_reward.downside_risk && (
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-foreground/70">Downside Risk</span>
+                            <p className={`text-sm font-mono font-medium ${bb.bear}`}>{synthesis.risk_reward.downside_risk}</p>
+                          </div>
+                        )}
+                      </div>
+                      {synthesis.risk_reward.explanation && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{synthesis.risk_reward.explanation}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Confidence Assessment */}
+                {synthesis.confidence_explanation && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="p-6 space-y-3">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Confidence Assessment</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed border-l-4 border-primary/30 pl-4">
+                        {synthesis.confidence_explanation}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Key Levels */}
+                {((synthesis.key_levels?.support?.length > 0) || (synthesis.key_levels?.resistance?.length > 0)) && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="p-6 space-y-3">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Key Levels</h3>
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {synthesis.key_levels?.support?.length > 0 && (
+                          <div>
+                            <span className={`text-[10px] uppercase tracking-widest ${bb.bull}`}>Support</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {synthesis.key_levels.support.map((level: string, i: number) => (
+                                <Badge key={i} variant="outline" className={`${bb.bull} border-bull/30`}>{level}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {synthesis.key_levels?.resistance?.length > 0 && (
+                          <div>
+                            <span className={`text-[10px] uppercase tracking-widest ${bb.bear}`}>Resistance</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {synthesis.key_levels.resistance.map((level: string, i: number) => (
+                                <Badge key={i} variant="outline" className={`${bb.bear} border-bear/30`}>{level}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Catalysts to Watch */}
+                {synthesis.catalysts_to_watch?.length > 0 && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="p-6 space-y-3">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Catalysts to Watch</h3>
+                      <ul className="space-y-1.5" role="list">
+                        {synthesis.catalysts_to_watch.map((c: string, i: number) => (
+                          <li key={i} className="flex gap-2 text-xs text-foreground">
+                            <span className="text-primary mt-0.5 shrink-0" aria-hidden="true">•</span>
+                            <span>{c}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Action Items */}
+                {synthesis.action_items?.length > 0 && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="p-6 space-y-3">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-widest text-foreground/70">Action Items</h3>
+                      <ol className="space-y-1.5">
+                        {synthesis.action_items.map((item: string, i: number) => (
+                          <li key={i} className="flex gap-2 text-xs">
+                            <span className="text-primary font-mono shrink-0">{i + 1}.</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             ) : (
               <Card className="border-border bg-card">
